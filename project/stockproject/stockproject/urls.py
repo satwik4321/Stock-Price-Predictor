@@ -20,6 +20,6 @@ from django.urls import path
 from myapp import views
 
 urlpatterns = [
-    path('run-python-function/', views.run_python_function, name='run_python_function'),
+    path('collect_history/', views.collect_history, name='collect_history'),
     path('', views.home, name='home')
 ]

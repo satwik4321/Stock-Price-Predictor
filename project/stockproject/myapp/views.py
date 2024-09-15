@@ -14,7 +14,7 @@ plt.style.use("fivethirtyeight")
 #from pandas_datareader.data import DataReader
 import yfinance as yf
 #from pandas_datareader import data as pdr
-def run_python_function(request):
+def collect_history(request):
     if request.method == 'POST':
         form=StockForm(request.POST)
         print(request.POST)

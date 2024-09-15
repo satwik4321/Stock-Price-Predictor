@@ -38,7 +38,7 @@
     <div class="container">
         <div class="vertical-line"></div>
         <div class="left">
-            <form id='stock-form' method="post" action="{% url 'run_python_function' %}">
+            <form id='stock-form' method="post" action="{% url 'collect_history' %}">
                 {% csrf_token %}
                 <br>
                 <br>
@@ -74,7 +74,7 @@
             data[key] = value;
             });
             // Send the AJAX request to Django
-            fetch("{% url 'run_python_function' %}", {
+            fetch("{% url 'collect_history' %}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

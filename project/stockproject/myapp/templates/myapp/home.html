@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Price Prediction</title>
+    <style>
+        .container {
+            display: flex;
+            position: relative;
+            min-height: 89.5vh;
+            height: 100%; 
+        }
+        .left, .right {
+            flex: 1;
+        }
+        .vertical-line {
+            position:absolute;
+            left: 45%;
+            top: 0;
+            bottom: 0;
+            border-left: 2px solid #000;
+            margin-top: -10px;
+        }
+        hr {
+            border: none;
+            height: 2px;
+            background-color: black; 
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div align="center">
+        <h1>STOCK PRICE PREDICTION</h1>
+    </div>
+    <hr>
+    <div class="container">
+        <div class="vertical-line"></div>
+        <div class="left">
+            <form id='stock-form' method="post" action="{% url 'run_python_function' %}">
+                {% csrf_token %}
+                <br>
+                <br>
+                {{ form.as_p }}
+                <br>
+                <button type="submit" id="execute-btn">Submit</button>
+            </form>
+        </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('execute-btn').addEventListener('click', function(event) {
+        
+        var searchInput = document.querySelector('[name="search"]').value;
+        var choiceInput = document.querySelector('[name="choices"]').value;
+        
+        // Check if both fields have inputs
+        if (searchInput!="" && choiceInput!="Select One") {
+        alert("Please fill only one field before submitting!");  // Show alert if both fields are filled
+        event.preventDefault();
+        return False;  // Prevent submission
+        }
+        if (searchInput=="" && choiceInput=="Select One") {
+        alert("Please fill atleast one field before submitting!");  // Show alert if both fields are filled
+        event.preventDefault();
+        return False;  // Prevent submission
+        }
+            // CSRF token (Django protects against CSRF attacks by default)
+            var csrftoken = '{{ csrf_token }}';
+            var formData = new FormData(document.getElementById('stock-form'));
+            var data = {};
+            formData.forEach((value, key) => {
+            data[key] = value;
+            });
+            // Send the AJAX request to Django
+            fetch("{% url 'run_python_function' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({data}) 
+            })
+            .then(response => response.json())
+            .then(data => {
+        if (data.error) {
+            console.error('Form error:', data.form_errors); 
+        } else {
+            console.log('Response data:', "data");
+        }
+    })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

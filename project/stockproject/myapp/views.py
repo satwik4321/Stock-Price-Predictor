@@ -6,6 +6,7 @@ import numpy as np
 from .forms import StockForm
 import matplotlib.pyplot as plt
 import seaborn as sns
+from tensorflow import keras
 from keras.models import Sequential
 from keras.layers import Dense, LSTM
 sns.set_style('whitegrid')
@@ -17,7 +18,7 @@ plt.style.use("fivethirtyeight")
 import yfinance as yf
 #from pandas_datareader import data as pdr
 from sklearn.preprocessing import MinMaxScaler
-def train_model(data):
+def train_model(name,data,input):
     data=data.filter(['Close'])
     data=data.values
     training_len=int(np.ceil(len(data)*0.75))
@@ -51,15 +52,20 @@ def train_model(data):
     
 
     # Build the LSTM model
-    model = Sequential()
-    model.add(LSTM(128, return_sequences=True, input_shape= (x_train.shape[1], 1)))
-    model.add(LSTM(64, return_sequences=False))
-    model.add(Dense(25))
-    model.add(Dense(1))
-    
+    if input==1:
+        if str(name+'.h5' in )
+        model = Sequential()
+        model.add(LSTM(128, return_sequences=True, input_shape= (x_train.shape[1], 1)))
+        model.add(LSTM(64, return_sequences=False))
+        model.add(Dense(25))
+        model.add(Dense(1))
+        
     # Compile the model
-    model.compile(optimizer='adam', loss='mean_squared_error')
-    model.fit(x_train, y_train, batch_size=1, epochs=1)
+        model.compile(optimizer='adam', loss='mean_squared_error')
+        model.fit(x_train, y_train, batch_size=1, epochs=1)
+        model.save(str(name+'.h5'))
+    else:
+        model = keras.models.load_model(str(name+'.h5'))
     test_data = scaled_data[training_len - 60: , :]
     # Create the data sets x_test and y_test
     x_test = []
@@ -86,12 +92,14 @@ def collect_history(request):
     if request.method == 'POST':
         form=StockForm(request.POST)
         print(request.POST)
+        input=0
         if form.is_valid():
             if form.cleaned_data['search']!="":
                 Name=form.cleaned_data['search']
             else:
                 if form.cleaned_data['choices']!="Select One":
                     Name=form.cleaned_data['choices']
+                    input=1
                     
             stock=yf.Ticker(Name)
             data_stock=stock.history(start="2020-01-01",end=None)
@@ -99,7 +107,9 @@ def collect_history(request):
             print(data_stock)
         else:
             print(form.errors)
-        train_model(data_stock)
+        
+        train_model(Name,data_stock,input)
+
         data={}
         # Return a JSON response
         return render(request, 'myapp/home.html', {'form': form, 'message': 'Data fetched successfully!', 'data': data_stock.to_dict()})

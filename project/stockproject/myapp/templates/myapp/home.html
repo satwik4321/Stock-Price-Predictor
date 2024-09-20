@@ -64,7 +64,7 @@
         if (searchInput=="" && choiceInput=="Select One") {
         alert("Please fill atleast one field before submitting!");  // Show alert if both fields are filled
         event.preventDefault();
-        return False;  // Prevent submission
+        return False;  
         }
             // CSRF token (Django protects against CSRF attacks by default)
             var csrftoken = '{{ csrf_token }}';

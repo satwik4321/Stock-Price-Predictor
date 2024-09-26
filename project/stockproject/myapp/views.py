@@ -11,6 +11,9 @@ from keras.models import Sequential
 from keras.layers import Dense, LSTM
 sns.set_style('whitegrid')
 plt.style.use("fivethirtyeight")
+from pathlib import Path
+import os
+# Create a Path object
 #%matplotlib inline
 
 # For reading stock data from yahoo
@@ -23,13 +26,13 @@ def train_model(name,data,input):
     data=data.values
     training_len=int(np.ceil(len(data)*0.75))
     test_len=len(data)-training_len
-    print(data)
+    #print(data)
     data=data.reshape(-1,1)
-    print(data)
+    #print(data)
     scaler = MinMaxScaler(feature_range=(0,1))
     scaled_data = scaler.fit_transform(data)
-    print(scaled_data[0][0])
-    print(scaled_data)
+    #print(scaled_data[0][0])
+    #print(scaled_data)
 
     train_data = scaled_data[0:int(training_len), :]
     # Split the data into x_train and y_train data sets
@@ -39,10 +42,10 @@ def train_model(name,data,input):
     for i in range(60, len(train_data)):
         x_train.append(train_data[i-60:i, 0])
         y_train.append(train_data[i, 0])
-        if i<= 61:
-            print(x_train)
-            print(y_train)
-            print()
+        #if i<= 61:
+            #print(x_train)
+            #print(y_train)
+            #print()
         
     # Convert the x_train and y_train to numpy arrays 
     x_train, y_train = np.array(x_train), np.array(y_train)
@@ -50,22 +53,35 @@ def train_model(name,data,input):
     # Reshape the data
     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
     
-
+    file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
+    name_f=str(name+'.h5')
+    full_path=os.path.join(file_path,name_f)
     # Build the LSTM model
-    if input==1:
-        if str(name+'.h5' in )
-        model = Sequential()
-        model.add(LSTM(128, return_sequences=True, input_shape= (x_train.shape[1], 1)))
-        model.add(LSTM(64, return_sequences=False))
-        model.add(Dense(25))
-        model.add(Dense(1))
+    if input==0:
+        file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
+        name_f=str(name+'.h5')
+        full_path=os.path.join(file_path,name_f)
+        full_path=Path(full_path)
+        if full_path.is_file():
+            #print("exists")
+            model = keras.models.load_model(full_path)    
+        else:
+            #print(name)
+            model = Sequential()
+            model.add(LSTM(128, return_sequences=True, input_shape= (x_train.shape[1], 1)))
+            model.add(LSTM(64, return_sequences=False))
+            model.add(Dense(25))
+            model.add(Dense(1))
         
     # Compile the model
-        model.compile(optimizer='adam', loss='mean_squared_error')
-        model.fit(x_train, y_train, batch_size=1, epochs=1)
-        model.save(str(name+'.h5'))
+            model.compile(optimizer='adam', loss='mean_squared_error')
+            model.fit(x_train, y_train, batch_size=1, epochs=1)
+            file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
+            name_f=str(name+'.h5')
+            full_path=os.path.join(file_path,name_f)
+            model.save(full_path)
     else:
-        model = keras.models.load_model(str(name+'.h5'))
+        model = keras.models.load_model(full_path)
     test_data = scaled_data[training_len - 60: , :]
     # Create the data sets x_test and y_test
     x_test = []
@@ -82,12 +98,13 @@ def train_model(name,data,input):
     # Get the models predicted price values 
     predictions = model.predict(x_test)
     predictions = scaler.inverse_transform(predictions)
-
+    print(predictions)
+    print(len(predictions))
     # Get the root mean squared error (RMSE)
     rmse = np.sqrt(np.mean(((predictions - y_test) ** 2)))
-    print(rmse)
+    print("rmse: ",rmse)
     # Train the model
-    
+
 def collect_history(request):
     if request.method == 'POST':
         form=StockForm(request.POST)

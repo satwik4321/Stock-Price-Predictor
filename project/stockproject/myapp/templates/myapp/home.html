@@ -74,23 +74,7 @@
             data[key] = value;
             });
             // Send the AJAX request to Django
-            fetch("{% url 'collect_history' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify({data}) 
-            })
-            .then(response => response.json())
-            .then(data => {
-        if (data.error) {
-            console.error('Form error:', data.form_errors); 
-        } else {
-            console.log('Response data:', "data");
-        }
-    })
-            .catch(error => console.error('Error:', error));
+            
         });
     </script>
 </body>

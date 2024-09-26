@@ -9,6 +9,7 @@ import seaborn as sns
 from tensorflow import keras
 from keras.models import Sequential
 from keras.layers import Dense, LSTM
+import os #Importing OS to save a file to the machine
 sns.set_style('whitegrid')
 plt.style.use("fivethirtyeight")
 #%matplotlib inline
@@ -109,11 +110,34 @@ def collect_history(request):
             print(form.errors)
         
         train_model(Name,data_stock,input)
-
+        save_stock_data(Name, data_stock)
         data={}
         # Return a JSON response
         return render(request, 'myapp/home.html', {'form': form, 'message': 'Data fetched successfully!', 'data': data_stock.to_dict()})
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+#Store the data collected from the Collect_History function to be saved to a csv file
+
+def save_stock_data(stock_name, stock_data):
+
+        try:
+            stock = yf.Ticker(stock_name)
+            data_stock = stock.history(start = "2020-01-01", end = None)
+
+            if data_stock.empty:
+                    return JsonResponse({"error": "No data found for stock symbol"}, status = 4040)
+            
+            csv_filename= f"{stock_name}_stock_data.csv"
+            csv_filepath = os.path.join('your/media/path', csv_filename)
+
+            data_stock.to_csv(csv_filepath)
+
+            return f"Stock data saved to: {csv_filename}"
+        
+        except Exception as e:
+            return f"Error: {str(e)}"
+
 
 def home(request):
     form = StockForm()

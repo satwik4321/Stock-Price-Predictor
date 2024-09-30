@@ -64,10 +64,8 @@ def train_model(name,data,input):
         full_path=os.path.join(file_path,name_f)
         full_path=Path(full_path)
         if full_path.is_file():
-            #print("exists")
             model = keras.models.load_model(full_path)    
         else:
-            #print(name)
             model = Sequential()
             model.add(LSTM(128, return_sequences=True, input_shape= (x_train.shape[1], 1)))
             model.add(LSTM(64, return_sequences=False))

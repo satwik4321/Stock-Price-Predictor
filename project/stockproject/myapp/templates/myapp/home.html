@@ -26,6 +26,28 @@
             padding: 10px;
             width: 100%; /* Makes buttons or dropdown take full available width */
         }
+        .right {
+            padding: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center items horizontally */
+            justify-content: center; /* Center items vertically */
+            height: 100%;
+        }
+        .time-frames {
+            display: flex;
+            flex-direction: row; /* Align buttons in a row */
+            justify-content: center; /* Horizontally center the buttons */
+            align-items: center; /* Vertically center the buttons */
+            gap: 10px; /* Space between buttons */
+            width: auto; /* Auto width based on content */
+            padding: 10px 0; /* Optional padding for better spacing */
+        }
+        .time-frames button, .time-frames select {
+            margin: 5px;
+            padding: 10px;
+            width: 100%; /* Makes buttons or dropdown take full available width */
+        }
         .vertical-line {
             position:absolute;
             left: 45%;
@@ -108,7 +130,7 @@
                         {{ form.choices }}
                     </div>
                     <div>
-                        <label for="search">Enter the ticker symbol for the stock:</label>
+                        <label for="search">Enter the ticker symbol for the stock "Eg. 'Apple', 'AAPL' ":</label>
                         {{ form.search }}
                     </div>
                     <button type="submit">Submit</button>

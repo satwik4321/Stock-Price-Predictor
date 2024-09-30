@@ -123,11 +123,12 @@ def collect_history(request):
             data_stock=stock.history(start="2020-01-01",end=None)
             print(Name)
             print(data_stock)
+            save_stock_data(Name, data_stock)
         else:
             print(form.errors)
         
         train_model(Name,data_stock,input)
-        save_stock_data(Name, data_stock)
+        
         data={}
         # Return a JSON response
         return render(request, 'myapp/home.html', {'form': form, 'message': 'Data fetched successfully!', 'data': data_stock.to_dict()})
@@ -145,8 +146,11 @@ def save_stock_data(stock_name, stock_data):
             if data_stock.empty:
                     return JsonResponse({"error": "No data found for stock symbol"}, status = 4040)
             
+            project_root = os.path.dirname(os.path.abspath(__file__))
+            stock_data_folder = os.path.join(project_root, 'stockproject')
+            
             csv_filename= f"{stock_name}_stock_data.csv"
-            csv_filepath = os.path.join(r'C:\Users\sathw\Downloads', csv_filename)
+            csv_filepath = os.path.join('your/media/path', csv_filename)
 
             data_stock.to_csv(csv_filepath)
 
@@ -159,3 +163,4 @@ def save_stock_data(stock_name, stock_data):
 def home(request):
     form = StockForm()
     return render(request, 'myapp/home.html', {'form': form})
+

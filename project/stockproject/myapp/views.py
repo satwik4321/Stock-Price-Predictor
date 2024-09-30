@@ -146,7 +146,7 @@ def save_stock_data(stock_name, stock_data):
                     return JsonResponse({"error": "No data found for stock symbol"}, status = 4040)
             
             csv_filename= f"{stock_name}_stock_data.csv"
-            csv_filepath = os.path.join('your/media/path', csv_filename)
+            csv_filepath = os.path.join(r'C:\Users\sathw\Downloads', csv_filename)
 
             data_stock.to_csv(csv_filepath)
 

@@ -11,8 +11,20 @@
             min-height: 89.5vh;
             height: 100%; 
         }
-        .left, .right {
+        .left{
             flex: 1;
+        }
+        .right {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Aligns items to the left */
+            justify-content: center; /* Center items vertically */
+        }
+        .time-frames button, .time-frames select {
+            margin: 5px;
+            padding: 10px;
+            width: 100%; /* Makes buttons or dropdown take full available width */
         }
         .vertical-line {
             position:absolute;
@@ -28,8 +40,53 @@
             background-color: black; 
             width: 100%;
         }
+        form {
+            padding: 20px;
+            background: #f4f4f4;
+            border-radius: 8px;
+        }
+        label, select, input, button {
+            display: block;
+            width: 80%; /* Ensures form elements take full width of the form */
+            margin-bottom: 10px;
+        }
+        select {
+            width: 50%; /* Adjust the width of the dropdown */
+            max-width: 300px; /* Prevents dropdown from becoming too wide */
+        }
+        /* Style adjustments specifically for the form area */
+        .form-area {
+            display: flex;
+            flex-direction: column;
+            width:15cm; /* Adjust this as necessary to fit content */
+            padding: 20px;
+            background-color: #fff; /* Optional for visibility */
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Optional for styling */
+            border-radius: 8px;
+        }
+        button {
+            width: 150px; /* Adjusted width */
+            height: 40px; /* Adjusted height */
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 20px; /* Adjusted font size */
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
+<script>
+    function selectTimeFrame(timeFrame) {
+        console.log("Selected Time Frame: ", timeFrame);
+        // Here you can add code to fetch data based on the selected time frame
+    }
+    </script>
+    
 <body>
     <div align="center">
         <h1>STOCK PRICE PREDICTION</h1>
@@ -38,60 +95,38 @@
     <div class="container">
         <div class="vertical-line"></div>
         <div class="left">
-            <form id='stock-form' method="post" action="{% url 'collect_history' %}">
-                {% csrf_token %}
-                <br>
-                <br>
-                {{ form.as_p }}
-                <br>
-                <button type="submit" id="execute-btn">Submit</button>
-            </form>
+            <br><br>
+            <div class="form-area">
+                <form method="post" action="{% url 'collect_history' %}">
+                    {% csrf_token %}
+                    <div>
+                        <label for="company_with_tickers">View Company Names and Tickers:</label>
+                        {{ form.company_with_tickers }}
+                    </div>
+                    <div>
+                        <label for="choices">Select one of the stocks from the list:</label>
+                        {{ form.choices }}
+                    </div>
+                    <div>
+                        <label for="search">Enter the ticker symbol for the stock:</label>
+                        {{ form.search }}
+                    </div>
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
         </div>
+        <div class="right">
+            <div class="time-frames">
+                <button onclick="selectTimeFrame('1D')">1D</button>
+                <button onclick="selectTimeFrame('5D')">5D</button>
+                <button onclick="selectTimeFrame('1M')">1M</button>
+                <button onclick="selectTimeFrame('6M')">6M</button>
+                <button onclick="selectTimeFrame('YTD')">YTD</button>
+                <button onclick="selectTimeFrame('1Y')">1Y</button>
+                <button onclick="selectTimeFrame('5Y')">5Y</button>
+                <button onclick="selectTimeFrame('MAX')">Max</button>
+            </div>
         </div>
     </div>
-    <script>
-        document.getElementById('execute-btn').addEventListener('click', function(event) {
-        
-        var searchInput = document.querySelector('[name="search"]').value;
-        var choiceInput = document.querySelector('[name="choices"]').value;
-        
-        // Check if both fields have inputs
-        if (searchInput!="" && choiceInput!="Select One") {
-        alert("Please fill only one field before submitting!");  // Show alert if both fields are filled
-        event.preventDefault();
-        return False;  // Prevent submission
-        }
-        if (searchInput=="" && choiceInput=="Select One") {
-        alert("Please fill atleast one field before submitting!");  // Show alert if both fields are filled
-        event.preventDefault();
-        return False;  
-        }
-            // CSRF token (Django protects against CSRF attacks by default)
-            var csrftoken = '{{ csrf_token }}';
-            var formData = new FormData(document.getElementById('stock-form'));
-            var data = {};
-            formData.forEach((value, key) => {
-            data[key] = value;
-            });
-            // Send the AJAX request to Django
-            fetch("{% url 'collect_history' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify({data}) 
-            })
-            .then(response => response.json())
-            .then(data => {
-        if (data.error) {
-            console.error('Form error:', data.form_errors); 
-        } else {
-            console.log('Response data:', "data");
-        }
-    })
-            .catch(error => console.error('Error:', error));
-        });
-    </script>
 </body>
 </html>

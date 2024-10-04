@@ -19,7 +19,7 @@ def load_ticker_choices():
 class StockForm(forms.Form):
     company_with_tickers = forms.ChoiceField(
         choices=load_ticker_choices(),
-        label="View Company Names and Tickers",
+        label="View Stocks and their ticker symbols",
         required=False
     )
     choices = forms.ChoiceField(label='Select one of the stocks from the list:',choices=[('Select One','None Selected'),('AAPL', 'Apple'), ('GOOGL', 'Google'),('NVDA','NVIDIA'),('TSLA','Tesla'),('WBD','Warner Bros Discovery'),('AMZN','Amazon'),('INTC','Intel'),('NFLX','Netflix'),('META','Meta'),('F','Ford Motor')],required=False)
@@ -35,10 +35,5 @@ def update_choices():
         list_stocks.append((str(fname[:-3]),''))
     return list_stocks
 
-class StockForm(forms.Form):
-    search = forms.CharField(label='Enter the ticker symbol for the stock:', max_length=100,required=False)
-    choices=update_choices()
-    print(choices)
-    stock_choices=[('Select One','None Selected'),('AAPL', 'Apple'), ('GOOGL', 'Google'),('NVDA','NVIDIA'),('TSLA','Tesla'),('WBD','Warner Bros Discovery'),('AMZN','Amazon'),('INTC','Intel'),('NFLX','Netflix'),('META','Meta'),('F','Ford Motor')]
-    choices = forms.ChoiceField(label='Select one of the stocks from the list:',choices=stock_choices,required=False)
+
     

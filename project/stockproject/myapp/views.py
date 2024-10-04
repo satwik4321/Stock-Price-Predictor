@@ -14,11 +14,7 @@ sns.set_style('whitegrid')
 plt.style.use("fivethirtyeight")
 from pathlib import Path
 import os
-# Create a Path object
-#%matplotlib inline
 
-# For reading stock data from yahoo
-#from pandas_datareader.data import DataReader
 import yfinance as yf
 #from pandas_datareader import data as pdr
 from sklearn.preprocessing import MinMaxScaler

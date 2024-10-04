@@ -26,8 +26,6 @@
             padding: 10px;
             width: 100%; /* Makes buttons or dropdown take full available width */
         }
-<<<<<<< HEAD
-=======
         .right {
             padding: 200px;
             display: flex;
@@ -50,7 +48,6 @@
             padding: 10px;
             width: 100%; /* Makes buttons or dropdown take full available width */
         }
->>>>>>> 15a546d3d32c418fe3109412398e05a0fcb06a1e
         .vertical-line {
             position:absolute;
             left: 45%;
@@ -125,7 +122,7 @@
                 <form method="post" action="{% url 'collect_history' %}">
                     {% csrf_token %}
                     <div>
-                        <label for="company_with_tickers">View Company Names and Tickers:</label>
+                        <label for="company_with_tickers">View stock names and and ticker symbols:</label>
                         {{ form.company_with_tickers }}
                     </div>
                     <div>
@@ -133,11 +130,7 @@
                         {{ form.choices }}
                     </div>
                     <div>
-<<<<<<< HEAD
-                        <label for="search">Enter the ticker symbol for the stock:</label>
-=======
                         <label for="search">Enter the ticker symbol for the stock "Eg. 'Apple', 'AAPL' ":</label>
->>>>>>> 15a546d3d32c418fe3109412398e05a0fcb06a1e
                         {{ form.search }}
                     </div>
                     <button type="submit">Submit</button>

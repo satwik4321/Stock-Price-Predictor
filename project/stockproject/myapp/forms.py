@@ -19,7 +19,7 @@ def load_ticker_choices():
 class StockForm(forms.Form):
     company_with_tickers = forms.ChoiceField(
         choices=load_ticker_choices(),
-        label="View Stocks and their ticker symbols",
+        label="View Stocks and their ticker symbol",
         required=False
     )
     choices = forms.ChoiceField(label='Select one of the stocks from the list:',choices=[('Select One','None Selected'),('AAPL', 'Apple'), ('GOOGL', 'Google'),('NVDA','NVIDIA'),('TSLA','Tesla'),('WBD','Warner Bros Discovery'),('AMZN','Amazon'),('INTC','Intel'),('NFLX','Netflix'),('META','Meta'),('F','Ford Motor')],required=False)

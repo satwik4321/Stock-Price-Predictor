@@ -122,7 +122,7 @@
                 <form method="post" action="{% url 'collect_history' %}">
                     {% csrf_token %}
                     <div>
-                        <label for="company_with_tickers">View Company Names and Tickers:</label>
+                        <label for="company_with_tickers">View stock names and and ticker symbols:</label>
                         {{ form.company_with_tickers }}
                     </div>
                     <div>

@@ -5,102 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Price Prediction</title>
     <style>
-        .container {
-            display: flex;
-            position: relative;
-            min-height: 89.5vh;
-            height: 100%; 
-        }
-        .left{
-            flex: 1;
-        }
-        .right {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start; /* Aligns items to the left */
-            justify-content: center; /* Center items vertically */
-        }
-        .time-frames button, .time-frames select {
-            margin: 5px;
-            padding: 10px;
-            width: 100%; /* Makes buttons or dropdown take full available width */
-        }
-        .right {
-            padding: 200px;
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Center items horizontally */
-            justify-content: center; /* Center items vertically */
-            height: 100%;
-        }
-        .time-frames {
-            display: flex;
-            flex-direction: row; /* Align buttons in a row */
-            justify-content: center; /* Horizontally center the buttons */
-            align-items: center; /* Vertically center the buttons */
-            gap: 10px; /* Space between buttons */
-            width: auto; /* Auto width based on content */
-            padding: 10px 0; /* Optional padding for better spacing */
-        }
-        .time-frames button, .time-frames select {
-            margin: 5px;
-            padding: 10px;
-            width: 100%; /* Makes buttons or dropdown take full available width */
-        }
-        .vertical-line {
-            position:absolute;
-            left: 45%;
-            top: 0;
-            bottom: 0;
-            border-left: 2px solid #000;
-            margin-top: -10px;
-        }
-        hr {
-            border: none;
-            height: 2px;
-            background-color: black; 
-            width: 100%;
-        }
-        form {
-            padding: 20px;
-            background: #f4f4f4;
-            border-radius: 8px;
-        }
-        label, select, input, button {
-            display: block;
-            width: 80%; /* Ensures form elements take full width of the form */
-            margin-bottom: 10px;
-        }
-        select {
-            width: 50%; /* Adjust the width of the dropdown */
-            max-width: 300px; /* Prevents dropdown from becoming too wide */
-        }
-        /* Style adjustments specifically for the form area */
-        .form-area {
-            display: flex;
-            flex-direction: column;
-            width:15cm; /* Adjust this as necessary to fit content */
-            padding: 20px;
-            background-color: #fff; /* Optional for visibility */
-            box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Optional for styling */
-            border-radius: 8px;
-        }
-        button {
-            width: 150px; /* Adjusted width */
-            height: 40px; /* Adjusted height */
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 20px; /* Adjusted font size */
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+            .container {
+                display: flex;
+                position: relative;
+                min-height: 89.5vh;
+                height: 100%; 
+            }
+            .left{
+                flex: 1;
+            }
+            .right {
+                padding: 0;  /* Remove all padding for closer alignment to the line */
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start; /* Keep alignment to the left */
+                justify-content: flex-start; /* Start items from the top */
+                width: 200px; /* Control the width as needed */
+                height: 100%;
+                margin-left: -10px; /* Adjust this value to shift left */
+            }
+            .time-frames select {
+                padding: 10px;
+                width: 100%; /* Adjust width as needed */
+                cursor: pointer;
+            }
+            .time-frames {
+                width: 100%; /* Ensures the dropdown takes full width available */
+                margin-top: 20px; /* Adds some space above the dropdown */
+                margin-left: -600px;
+            }
+            .vertical-line {
+                position:absolute;
+                left: 45%;
+                top: 0;
+                bottom: 0;
+                border-left: 2px solid #000;
+                margin-top: -10px;
+            }
+            hr {
+                border: none;
+                height: 2px;
+                background-color: black; 
+                width: 100%;
+            }
+            form {
+                padding: 20px;
+                background: #f4f4f4;
+                border-radius: 8px;
+            }
+            label, select, input, button {
+                display: block;
+                width: 80%; /* Ensures form elements take full width of the form */
+                margin-bottom: 10px;
+            }
+            select {
+                width: 50%; /* Adjust the width of the dropdown */
+                max-width: 300px; /* Prevents dropdown from becoming too wide */
+            }
+            /* Style adjustments specifically for the form area */
+            .form-area {
+                display: flex;
+                flex-direction: column;
+                width:15cm; /* Adjust this as necessary to fit content */
+                padding: 20px;
+                background-color: #fff; /* Optional for visibility */
+                box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Optional for styling */
+                border-radius: 8px;
+            }
+            button {
+                width: 150px; /* Adjusted width */
+                height: 40px; /* Adjusted height */
+                padding: 10px 20px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 20px; /* Adjusted font size */
+            }
+            button:hover {
+                background-color: #0056b3;
+            }
+        </style>
 </head>
 <script>
     function selectTimeFrame(timeFrame) {

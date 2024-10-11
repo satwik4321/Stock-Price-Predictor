@@ -54,12 +54,12 @@ def train_model(name,data,input):
     # Reshape the data
     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
     
-    file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
+    file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\Stock-Price-Predictor\project\stockproject\models')
     name_f=str(name+'.h5')
     full_path=os.path.join(file_path,name_f)
     # Build the LSTM model
     if input==0:
-        file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
+        file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\Stock-Price-Predictor\project\stockproject\models')
         name_f=str(name+'.h5')
         full_path=os.path.join(file_path,name_f)
         full_path=Path(full_path)
@@ -75,7 +75,7 @@ def train_model(name,data,input):
     # Compile the model
             model.compile(optimizer='adam', loss='mean_squared_error')
             model.fit(x_train, y_train, batch_size=1, epochs=1)
-            file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
+            file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\Stock-Price-Predictor\project\stockproject\models')
             name_f=str(name+'.h5')
             full_path=os.path.join(file_path,name_f)
             model.save(full_path)
@@ -148,7 +148,7 @@ def save_stock_data(stock_name, stock_data):
             stock_data_folder = os.path.join(project_root, 'stockproject')
             
             csv_filename= f"{stock_name}_stock_data.csv"
-            csv_filepath = os.path.join(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\myapp\data', csv_filename)
+            csv_filepath = os.path.join(r'C:\Users\gogin\OneDrive\Documents\GitHub\Stock-Price-Predictor\project\stockproject\myapp\data', csv_filename)
 
             data_stock.to_csv(csv_filepath)
 
@@ -161,4 +161,3 @@ def save_stock_data(stock_name, stock_data):
 def home(request):
     form = StockForm()
     return render(request, 'myapp/home.html', {'form': form})
-

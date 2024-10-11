@@ -15,38 +15,24 @@
             flex: 1;
         }
         .right {
-            padding: 20px;
+            padding: 0;  /* Remove all padding for closer alignment to the line */
             display: flex;
             flex-direction: column;
-            align-items: flex-start; /* Aligns items to the left */
-            justify-content: center; /* Center items vertically */
-        }
-        .time-frames button, .time-frames select {
-            margin: 5px;
-            padding: 10px;
-            width: 100%; /* Makes buttons or dropdown take full available width */
-        }
-        .right {
-            padding: 200px;
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Center items horizontally */
-            justify-content: center; /* Center items vertically */
+            align-items: flex-start; /* Keep alignment to the left */
+            justify-content: flex-start; /* Start items from the top */
+            width: 200px; /* Control the width as needed */
             height: 100%;
+            margin-left: -10px; /* Adjust this value to shift left */
+        }
+        .time-frames select {
+            padding: 10px;
+            width: 100%; /* Adjust width as needed */
+            cursor: pointer;
         }
         .time-frames {
-            display: flex;
-            flex-direction: row; /* Align buttons in a row */
-            justify-content: center; /* Horizontally center the buttons */
-            align-items: center; /* Vertically center the buttons */
-            gap: 10px; /* Space between buttons */
-            width: auto; /* Auto width based on content */
-            padding: 10px 0; /* Optional padding for better spacing */
-        }
-        .time-frames button, .time-frames select {
-            margin: 5px;
-            padding: 10px;
-            width: 100%; /* Makes buttons or dropdown take full available width */
+            width: 100%; /* Ensures the dropdown takes full width available */
+            margin-top: 20px; /* Adds some space above the dropdown */
+            margin-left: -600px;
         }
         .vertical-line {
             position:absolute;
@@ -139,14 +125,15 @@
         </div>
         <div class="right">
             <div class="time-frames">
-                <button onclick="selectTimeFrame('1D')">1D</button>
-                <button onclick="selectTimeFrame('5D')">5D</button>
-                <button onclick="selectTimeFrame('1M')">1M</button>
-                <button onclick="selectTimeFrame('6M')">6M</button>
-                <button onclick="selectTimeFrame('YTD')">YTD</button>
-                <button onclick="selectTimeFrame('1Y')">1Y</button>
-                <button onclick="selectTimeFrame('5Y')">5Y</button>
-                <button onclick="selectTimeFrame('MAX')">Max</button>
+                <select onchange="selectTimeFrame(this.value)">
+                    <option value="">Select Time Frame</option>
+                    <option value="1D">Daily</option>
+                    <option value="5D">Weekly</option>
+                    <option value="1M">Monthly</option>
+                    <option value="6M">Quarterly</option>
+                    <option value="YTD">Yearly</option>
+                    <option value="MAX">Max</option>
+                </select>
             </div>
         </div>
     </div>

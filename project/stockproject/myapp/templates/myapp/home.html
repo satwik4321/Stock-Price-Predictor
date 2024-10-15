@@ -121,19 +121,30 @@
                     </div>
                     <button type="submit">Submit</button>
                 </form>
+                <script>
+                    // Initialize Select2 on the dropdown
+                    $(document).ready(function() {
+                        $('.select2-dropdown').select2({
+                            placeholder: 'Search options',
+                            allowClear: true
+                        });
+                    });
+                </script>
             </div>
         </div>
         <div class="right">
             <div class="time-frames">
-                <button onclick="selectTimeFrame('1D')">1D</button>
-                <button onclick="selectTimeFrame('5D')">5D</button>
-                <button onclick="selectTimeFrame('1M')">1M</button>
-                <button onclick="selectTimeFrame('6M')">6M</button>
-                <button onclick="selectTimeFrame('YTD')">YTD</button>
-                <button onclick="selectTimeFrame('1Y')">1Y</button>
-                <button onclick="selectTimeFrame('5Y')">5Y</button>
-                <button onclick="selectTimeFrame('MAX')">Max</button>
+                <select onchange="selectTimeFrame(this.value)">
+                    <option value="">Select Time Frame</option>
+                    <option value="1D">Daily</option>
+                    <option value="5D">Weekly</option>
+                    <option value="1M">Monthly</option>
+                    <option value="6M">Quarterly</option>
+                    <option value="YTD">Yearly</option>
+                    <option value="MAX">Max</option>
+                </select>
             </div>
+
         </div>
     </div>
 </body>

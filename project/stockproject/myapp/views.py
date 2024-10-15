@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from tensorflow import keras
 from keras.models import Sequential
-from keras.layers import Dense, LSTM
+from keras.layers import Dense, LSTM, Dropout
 import os #Importing OS to save a file to the machine
 sns.set_style('whitegrid')
 plt.style.use("fivethirtyeight")
@@ -43,7 +43,8 @@ def train_model(name,data,input):
             #print(x_train)
             #print(y_train)
             #print()
-        
+    print(x_train[0])
+    print(y_train[0])
     # Convert the x_train and y_train to numpy arrays 
     x_train, y_train = np.array(x_train), np.array(y_train)
 
@@ -63,43 +64,34 @@ def train_model(name,data,input):
             model = keras.models.load_model(full_path)    
         else:
             model = Sequential()
+            model.add(Dense(60))
+            model.add(Dense(100))
+            model.add(Dense(100))
             model.add(LSTM(128, return_sequences=True, input_shape= (x_train.shape[1], 1)))
             model.add(LSTM(64, return_sequences=False))
-            model.add(Dense(25))
+            model.add(Dropout(0.2))
             model.add(Dense(1))
         
     # Compile the model
-            model.compile(optimizer='adam', loss='mean_squared_error')
-            model.fit(x_train, y_train, batch_size=1, epochs=1)
+            model.compile(optimizer='adam', loss='mean_absolute_error')
+            model.fit(x_train, y_train, batch_size=128, epochs=20)
             file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
             name_f=str(name+'.h5')
             full_path=os.path.join(file_path,name_f)
             model.save(full_path)
     else:
         model = keras.models.load_model(full_path)
-    test_data = scaled_data[training_len - 60: , :]
+    #test_data = scaled_data[training_len - 60: , :]
     # Create the data sets x_test and y_test
     x_test = []
     y_test = data[training_len:, :]
-    for i in range(60, len(test_data)):
-        x_test.append(test_data[i-60:i, 0])
-    
+    for i in range(training_len,len(data)):
+        x_test.append(data[i-60:i, 0])
     # Convert the data to a numpy array
-    x_test = np.array(x_test)
-
-    # Reshape the data
-    x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1 ))
-
-    # Get the models predicted price values 
-    predictions = model.predict(x_test)
-    predictions = scaler.inverse_transform(predictions)
-    print(predictions)
-    print(len(predictions))
-    # Get the root mean squared error (RMSE)
-    rmse = np.sqrt(np.mean(((predictions - y_test) ** 2)))
-    print("rmse: ",rmse)
-    # Train the model
-
+    x_test = np.array(x_test) 
+    # Evaluate the model on test data
+    test_loss = model.evaluate(x_test, y_test)
+    print('Test Loss:', test_loss)
 def collect_history(request):
     if request.method == 'POST':
         form=StockForm(request.POST)

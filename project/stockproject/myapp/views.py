@@ -39,10 +39,6 @@ def train_model(name,data,input):
     for i in range(60, len(train_data)):
         x_train.append(train_data[i-60:i, 0])
         y_train.append(train_data[i, 0])
-        #if i<= 61:
-            #print(x_train)
-            #print(y_train)
-            #print()
     print(x_train[0])
     print(y_train[0])
     # Convert the x_train and y_train to numpy arrays 

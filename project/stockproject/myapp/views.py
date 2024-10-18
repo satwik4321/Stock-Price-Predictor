@@ -75,7 +75,7 @@ def train_model(name,data,input):
     # Compile the model
             model.compile(optimizer='adam', loss='mean_absolute_error')
             model.fit(x_train, y_train, batch_size=128, epochs=20)
-            file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\Stock-Price-Predictor\project\stockproject\models')
+            file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
             name_f=str(name+'.h5')
             full_path=os.path.join(file_path,name_f)
             model.save(full_path)

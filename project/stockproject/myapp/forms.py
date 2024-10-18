@@ -7,9 +7,12 @@ def load_ticker_choices():
     file_path = os.path.join(settings.BASE_DIR, 'myapp/data/stocks.csv')
     try:
         with open(file_path, 'r') as file:
+            next(file)  # Skip the header if there is one
             for line in file:
-                symbol, name = line.strip().split(',')
-                choices.append((symbol, f"{name}, {symbol}"))
+                parts = line.strip().split(',')
+                if len(parts) >= 2:
+                    symbol, name = parts[0], parts[1]
+                    choices.append((symbol, f"{name}, {symbol}"))
     except FileNotFoundError:
         print(f"File not found: {file_path}")
     except Exception as e:
@@ -28,7 +31,7 @@ class StockForm(forms.Form):
 import os
 from pathlib import Path
 def update_choices():
-    file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
+    file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\Stock-Price-Predictor\project\stockproject\models')
     list_stocks=[]
     list_stocks.append(('Select One','None Selected'))
     for fname in os.listdir(file_path):

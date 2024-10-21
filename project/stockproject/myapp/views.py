@@ -9,6 +9,7 @@ import seaborn as sns
 from tensorflow import keras
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout
+from keras.optimizers import Adam
 import os #Importing OS to save a file to the machine
 sns.set_style('whitegrid')
 plt.style.use("fivethirtyeight")
@@ -36,9 +37,9 @@ def train_model(name,data,input):
     x_train = []
     y_train = []
 
-    for i in range(60, len(train_data)):
+    for i in range(60, len(train_data)-1):
         x_train.append(train_data[i-60:i, 0])
-        y_train.append(train_data[i, 0])
+        y_train.append(train_data[i+1, 0])
     print(x_train[0])
     print(y_train[0])
     # Convert the x_train and y_train to numpy arrays 
@@ -47,12 +48,12 @@ def train_model(name,data,input):
     # Reshape the data
     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
     
-    file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\Stock-Price-Predictor\project\stockproject\models')
+    file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
     name_f=str(name+'.h5')
     full_path=os.path.join(file_path,name_f)
     # Build the LSTM model
     if input==0:
-        file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\Stock-Price-Predictor\project\stockproject\models')
+        file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
         name_f=str(name+'.h5')
         full_path=os.path.join(file_path,name_f)
         full_path=Path(full_path)
@@ -60,17 +61,18 @@ def train_model(name,data,input):
             model = keras.models.load_model(full_path)    
         else:
             model = Sequential()
-            model.add(Dense(60))
+            model.add(Dense(100))
             model.add(Dense(100))
             model.add(Dense(100))
             model.add(LSTM(128, return_sequences=True, input_shape= (x_train.shape[1], 1)))
-            model.add(LSTM(64, return_sequences=False))
+            model.add(LSTM(64, return_sequences=True))
             model.add(Dropout(0.2))
             model.add(Dense(1))
         
     # Compile the model
-            model.compile(optimizer='adam', loss='mean_absolute_error')
-            model.fit(x_train, y_train, batch_size=128, epochs=20)
+            optimizer=Adam(learning_rate=0.001)
+            model.compile(optimizer=optimizer, loss='mean_absolute_error')
+            model.fit(x_train, y_train, batch_size=128, epochs=200)
             file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
             name_f=str(name+'.h5')
             full_path=os.path.join(file_path,name_f)

@@ -98,9 +98,7 @@ def collect_history(request):
                     input=1
                     
             stock=yf.Ticker(Name)
-            #data_stock=stock.history(start="2020-01-01",end=None)
             start_date = "2017-01-01"
-            #end_date = '2021–01–01'
             data_stock = yf.download(stock.info['symbol'], start=start_date)
             print("stock_name:",stock.info['symbol'])
             save_stock_data(Name, data_stock)

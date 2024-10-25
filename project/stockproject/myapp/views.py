@@ -19,26 +19,22 @@ import yfinance as yf
 #from pandas_datareader import data as pdr
 from sklearn.preprocessing import MinMaxScaler
 def train_model(name,data,input):
-    data=data.filter(['Close'])
-    data=data.values
+    data=data.filter(['Close']).values.reshape(-1,1)
     training_len=int(np.ceil(len(data)*0.75))
     test_len=len(data)-training_len
-    #print(data)
-    data=data.reshape(-1,1)
-    #print(data)
+
+
     scaler = MinMaxScaler(feature_range=(0,1))
     scaled_data = scaler.fit_transform(data)
-    #print(scaled_data[0][0])
-    #print(scaled_data)
+
 
     train_data = scaled_data[0:int(training_len), :]
-    # Split the data into x_train and y_train data sets
     x_train = []
     y_train = []
 
-    for i in range(60, len(train_data)):
+    for i in range(60, len(train_data)-1):
         x_train.append(train_data[i-60:i, 0])
-        y_train.append(train_data[i, 0])
+        y_train.append(train_data[i+1, 0])
     print(x_train[0])
     print(y_train[0])
     # Convert the x_train and y_train to numpy arrays 
@@ -47,12 +43,12 @@ def train_model(name,data,input):
     # Reshape the data
     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
     
-    file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\Stock-Price-Predictor\project\stockproject\models')
+    file_path = Path(r'project/stockproject/models')
     name_f=str(name+'.h5')
     full_path=os.path.join(file_path,name_f)
     # Build the LSTM model
     if input==0:
-        file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\Stock-Price-Predictor\project\stockproject\models')
+        file_path = Path(r'project/stockproject/models')
         name_f=str(name+'.h5')
         full_path=os.path.join(file_path,name_f)
         full_path=Path(full_path)
@@ -60,24 +56,24 @@ def train_model(name,data,input):
             model = keras.models.load_model(full_path)    
         else:
             model = Sequential()
+            model.add(LSTM(128, return_sequences=True, input_shape= (x_train.shape[1], 1)))
+            model.add(LSTM(64, return_sequences=True))
+            model.add(Dropout(0.2))
             model.add(Dense(60))
             model.add(Dense(100))
             model.add(Dense(100))
-            model.add(LSTM(128, return_sequences=True, input_shape= (x_train.shape[1], 1)))
-            model.add(LSTM(64, return_sequences=False))
-            model.add(Dropout(0.2))
             model.add(Dense(1))
         
     # Compile the model
-            model.compile(optimizer='adam', loss='mean_squared_error')
-            model.fit(x_train, y_train, batch_size=1, epochs=1)
-            file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\Stock-Price-Predictor\project\stockproject\models')
+            model.compile(optimizer='adam', loss='mean_absolute_error')
+            model.fit(x_train, y_train, batch_size=128, epochs=20)
+            file_path = Path(r'project/stockproject/models')
             name_f=str(name+'.h5')
             full_path=os.path.join(file_path,name_f)
             model.save(full_path)
     else:
         model = keras.models.load_model(full_path)
-    #test_data = scaled_data[training_len - 60: , :]
+    test_data = scaled_data[training_len - 60: , :]
     # Create the data sets x_test and y_test
     x_test = []
     y_test = data[training_len:, :]
@@ -85,9 +81,14 @@ def train_model(name,data,input):
         x_test.append(data[i-60:i, 0])
     # Convert the data to a numpy array
     x_test = np.array(x_test) 
+    x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
+    y_test_scaled = scaler.transform(y_test)
     # Evaluate the model on test data
-    test_loss = model.evaluate(x_test, y_test)
+    test_loss = model.evaluate(x_test, y_test_scaled)
     print('Test Loss:', test_loss)
+    
+
+
 def collect_history(request):
     if request.method == 'POST':
         form=StockForm(request.POST)
@@ -132,7 +133,7 @@ def save_stock_data(stock_name, stock_data):
             stock_data_folder = os.path.join(project_root, 'stockproject')
             
             csv_filename= f"{stock_name}_stock_data.csv"
-            csv_filepath = os.path.join(r'C:\Users\gogin\OneDrive\Documents\GitHub\Stock-Price-Predictor\project\stockproject\myapp\data', csv_filename)
+            csv_filepath = os.path.join(r'project\stockproject\myapp\data', csv_filename)
 
             data_stock.to_csv(csv_filepath)
 

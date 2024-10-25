@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from tensorflow import keras
 from keras.models import Sequential
-from keras.layers import Dense, LSTM, Dropout
+from keras.layers import Dense, LSTM, Dropout, TimeDistributed
 from keras.optimizers import Adam
 import os #Importing OS to save a file to the machine
 sns.set_style('whitegrid')
@@ -19,39 +19,30 @@ import os
 import yfinance as yf
 #from pandas_datareader import data as pdr
 from sklearn.preprocessing import MinMaxScaler
-def train_model(name,data,input):
-    data=data.filter(['Close'])
-    data=data.values
-    training_len=int(np.ceil(len(data)*0.75))
-    test_len=len(data)-training_len
-    #print(data)
-    data=data.reshape(-1,1)
-    #print(data)
-    scaler = MinMaxScaler(feature_range=(0,1))
-    scaled_data = scaler.fit_transform(data)
-    #print(scaled_data[0][0])
-    #print(scaled_data)
+def create_lstm_data_train(data, time_steps):
+ x, y = [], []
+ training_len=int(np.ceil(len(data)*0.50))
+ data=data[:training_len]
+ for i in range(len(data) - (2*time_steps)):
+    x.append(data[i:(i + time_steps), 0])
+    y.append(data[i + time_steps:i+(2*time_steps), 0])
+ return np.array(x), np.array(y)
 
-    train_data = scaled_data[0:int(training_len), :]
-    # Split the data into x_train and y_train data sets
-    x_train = []
-    y_train = []
+def create_lstm_data_test(data, time_steps):
+ x, y = [], []
+ training_len=int(np.ceil(len(data)*0.25))
+ data=data[training_len:len(data)-(2*time_steps)]
+ for i in range(len(data) - (2*time_steps)):
+    x.append(data[i:(i + time_steps), 0])
+    y.append(data[i + time_steps:i+(2*time_steps), 0])
+ return np.array(x), np.array(y)
 
-    for i in range(60, len(train_data)-1):
-        x_train.append(train_data[i-60:i, 0])
-        y_train.append(train_data[i+1, 0])
-    print(x_train[0])
-    print(y_train[0])
-    # Convert the x_train and y_train to numpy arrays 
-    x_train, y_train = np.array(x_train), np.array(y_train)
-
-    # Reshape the data
-    x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
-    
+def train_model(name,data,input,scaler):
+    x,y=create_lstm_data_train(data,300)
     file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
     name_f=str(name+'.h5')
     full_path=os.path.join(file_path,name_f)
-    # Build the LSTM model
+
     if input==0:
         file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
         name_f=str(name+'.h5')
@@ -61,35 +52,38 @@ def train_model(name,data,input):
             model = keras.models.load_model(full_path)    
         else:
             model = Sequential()
-            model.add(Dense(100))
-            model.add(Dense(100))
-            model.add(Dense(100))
-            model.add(LSTM(128, return_sequences=True, input_shape= (x_train.shape[1], 1)))
+            model.add(LSTM(128, return_sequences=True, input_shape=(len(x[0]), 1)))
+            input_shape=(len(x[0]),1)
             model.add(LSTM(64, return_sequences=True))
-            model.add(Dropout(0.2))
-            model.add(Dense(1))
+            model.add(LSTM(32,return_sequences=True))
+            model.add(TimeDistributed(Dense(1)))
         
-    # Compile the model
-            optimizer=Adam(learning_rate=0.001)
+            # Compile the model
+            optimizer=Adam(learning_rate=0.018)
             model.compile(optimizer=optimizer, loss='mean_absolute_error')
-            model.fit(x_train, y_train, batch_size=128, epochs=200)
+            model.fit(x, y, batch_size=128, epochs=200)
             file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
             name_f=str(name+'.h5')
             full_path=os.path.join(file_path,name_f)
             model.save(full_path)
     else:
         model = keras.models.load_model(full_path)
-    #test_data = scaled_data[training_len - 60: , :]
-    # Create the data sets x_test and y_test
-    x_test = []
-    y_test = data[training_len:, :]
-    for i in range(training_len,len(data)):
-        x_test.append(data[i-60:i, 0])
-    # Convert the data to a numpy array
-    x_test = np.array(x_test) 
-    # Evaluate the model on test data
-    test_loss = model.evaluate(x_test, y_test)
+
+    x,y=create_lstm_data_test(data,300)
+    test_loss = model.evaluate(x, y)
     print('Test Loss:', test_loss)
+    y_pred=model.predict(x[0].reshape(1,len(x[0]),1))
+    y_pred=y_pred.reshape(-1,1)
+    y=y.reshape(-1,1)
+    y_pred = scaler.inverse_transform(y_pred)
+    y_actual = scaler.inverse_transform(y)
+    y_actual=y_actual[:len(y_pred)]
+    MAE=0
+    for i in range(len(y_pred)):
+        MAE+=abs(y_pred[i]-y_actual[i])
+    MAE/=len(y_pred)
+    print("Mean absolute error:",MAE)
+
 def collect_history(request):
     if request.method == 'POST':
         form=StockForm(request.POST)
@@ -104,16 +98,18 @@ def collect_history(request):
                     input=1
                     
             stock=yf.Ticker(Name)
-            data_stock=stock.history(start="2020-01-01",end=None)
-            print(Name)
-            print(data_stock)
+            #data_stock=stock.history(start="2020-01-01",end=None)
+            start_date = "2017-01-01"
+            #end_date = '2021–01–01'
+            data_stock = yf.download(stock.info['symbol'], start=start_date)
+            print("stock_name:",stock.info['symbol'])
             save_stock_data(Name, data_stock)
         else:
             print(form.errors)
-        
-        train_model(Name,data_stock,input)
-        
-        data={}
+        data_close=data_stock['Close'].values.reshape(-1,1)
+        scaler = MinMaxScaler(feature_range=(0, 1))
+        close_prices_scaled = scaler.fit_transform(data_close)
+        train_model(Name,close_prices_scaled,input,scaler)
         # Return a JSON response
         return render(request, 'myapp/home.html', {'form': form, 'message': 'Data fetched successfully!', 'data': data_stock.to_dict()})
     return JsonResponse({"error": "Invalid request"}, status=400)
@@ -134,7 +130,7 @@ def save_stock_data(stock_name, stock_data):
             stock_data_folder = os.path.join(project_root, 'stockproject')
             
             csv_filename= f"{stock_name}_stock_data.csv"
-            csv_filepath = os.path.join(r'C:\Users\gogin\OneDrive\Documents\GitHub\Stock-Price-Predictor\project\stockproject\myapp\data', csv_filename)
+            csv_filepath = os.path.join(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\myapp\data', csv_filename)
 
             data_stock.to_csv(csv_filepath)
 

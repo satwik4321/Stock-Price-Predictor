@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Price Prediction</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
     <style>
         .container {
             display: flex;
@@ -108,9 +109,10 @@
                 <form method="post" action="{% url 'collect_history' %}">
                     {% csrf_token %}
                     <div>
-                        <label for="company_with_tickers">View stock names and and ticker symbols:</label>
+                        <label for="company_with_tickers">View stock names and ticker symbols:</label>
                         {{ form.company_with_tickers }}
                     </div>
+                    <br>
                     <div>
                         <label for="choices">Select one of the stocks from the list:</label>
                         {{ form.choices }}
@@ -121,15 +123,6 @@
                     </div>
                     <button type="submit">Submit</button>
                 </form>
-                <script>
-                    // Initialize Select2 on the dropdown
-                    $(document).ready(function() {
-                        $('.select2-dropdown').select2({
-                            placeholder: 'Search options',
-                            allowClear: true
-                        });
-                    });
-                </script>
             </div>
         </div>
         <div class="right">
@@ -144,8 +137,17 @@
                     <option value="MAX">Max</option>
                 </select>
             </div>
-
         </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#id_company_with_tickers').select2({
+                placeholder: "Select a stock",
+                allowClear: true
+            });
+        });
+    </script>
 </body>
 </html>

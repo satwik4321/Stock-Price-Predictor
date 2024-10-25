@@ -39,12 +39,12 @@ def create_lstm_data_test(data, time_steps):
 
 def train_model(name,data,input,scaler,size):
     x,y=create_lstm_data_train(data,size)
-    file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
+    file_path = Path(r'project\stockproject\models')
     name_f=str(name+'.h5')
     full_path=os.path.join(file_path,name_f)
 
     if input==0:
-        file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
+        file_path = Path(r'project\stockproject\models')
         name_f=str(name+'.h5')
         full_path=os.path.join(file_path,name_f)
         full_path=Path(full_path)
@@ -62,7 +62,7 @@ def train_model(name,data,input,scaler,size):
             optimizer=Adam(learning_rate=0.018)
             model.compile(optimizer=optimizer, loss='mean_absolute_error')
             model.fit(x, y, batch_size=128, epochs=200)
-            file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
+            file_path = Path(r'project\stockproject\models')
             name_f=str(name+'.h5')
             full_path=os.path.join(file_path,name_f)
             model.save(full_path)
@@ -128,7 +128,7 @@ def save_stock_data(stock_name, stock_data):
             stock_data_folder = os.path.join(project_root, 'stockproject')
             
             csv_filename= f"{stock_name}_stock_data.csv"
-            csv_filepath = os.path.join(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\myapp\data', csv_filename)
+            csv_filepath = os.path.join(r'project\stockproject\myapp\data', csv_filename)
 
             data_stock.to_csv(csv_filepath)
 

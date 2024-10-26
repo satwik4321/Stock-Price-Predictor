@@ -107,7 +107,7 @@ def collect_history(request):
         data_close=data_stock['Close'].values.reshape(-1,1)
         scaler = MinMaxScaler(feature_range=(0, 1))
         close_prices_scaled = scaler.fit_transform(data_close)
-        train_model(Name,close_prices_scaled,input,scaler,10)
+        train_model(Name,close_prices_scaled,input,scaler,365)
         # Return a JSON response
         return render(request, 'myapp/home.html', {'form': form, 'message': 'Data fetched successfully!', 'data': data_stock.to_dict()})
     return JsonResponse({"error": "Invalid request"}, status=400)

@@ -39,12 +39,12 @@ def create_lstm_data_test(data, time_steps):
 
 def train_model(name,data,input,scaler,size):
     x,y=create_lstm_data_train(data,size)
-    file_path = Path(r'project\stockproject\models')
+    file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
     name_f=str(name+'.h5')
     full_path=os.path.join(file_path,name_f)
 
     if input==0:
-        file_path = Path(r'project\stockproject\models')
+        file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
         name_f=str(name+'.h5')
         full_path=os.path.join(file_path,name_f)
         full_path=Path(full_path)
@@ -62,9 +62,10 @@ def train_model(name,data,input,scaler,size):
             optimizer=Adam(learning_rate=0.018)
             model.compile(optimizer=optimizer, loss='mean_absolute_error')
             model.fit(x, y, batch_size=128, epochs=200)
-            file_path = Path(r'project\stockproject\models')
+            file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
             name_f=str(name+'.h5')
             full_path=os.path.join(file_path,name_f)
+            print(full_path)
             model.save(full_path)
     else:
         model = keras.models.load_model(full_path)
@@ -98,16 +99,22 @@ def collect_history(request):
                     input=1
                     
             stock=yf.Ticker(Name)
-            start_date = "2017-01-01"
+            start_date = "2017-01-03"
             data_stock = yf.download(stock.info['symbol'], start=start_date)
+            timeframe=365
+            date=str(data_stock.index[0])
+            print("date:",date[:10],start_date[:10])
+            if start_date[:10]!=date[:10]:
+                timeframe=60
             print("stock_name:",stock.info['symbol'])
+            print("timeframe:",timeframe)
             save_stock_data(Name, data_stock)
         else:
             print(form.errors)
         data_close=data_stock['Close'].values.reshape(-1,1)
         scaler = MinMaxScaler(feature_range=(0, 1))
         close_prices_scaled = scaler.fit_transform(data_close)
-        train_model(Name,close_prices_scaled,input,scaler,365)
+        train_model(Name,close_prices_scaled,input,scaler,timeframe)
         # Return a JSON response
         return render(request, 'myapp/home.html', {'form': form, 'message': 'Data fetched successfully!', 'data': data_stock.to_dict()})
     return JsonResponse({"error": "Invalid request"}, status=400)
@@ -128,8 +135,7 @@ def save_stock_data(stock_name, stock_data):
             stock_data_folder = os.path.join(project_root, 'stockproject')
             
             csv_filename= f"{stock_name}_stock_data.csv"
-            csv_filepath = os.path.join(r'project\stockproject\myapp\data', csv_filename)
-
+            csv_filepath = os.path.join(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\myapp\data', csv_filename)
             data_stock.to_csv(csv_filepath)
 
             return f"Stock data saved to: {csv_filename}"

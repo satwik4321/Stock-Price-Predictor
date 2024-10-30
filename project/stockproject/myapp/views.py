@@ -123,7 +123,12 @@ def collect_history(request):
                     
             stock=yf.Ticker(Name)
             start_date = "2017-01-03"
-            data_stock = yf.download(stock.info['symbol'], start=start_date)
+            csv_filename= f"{stock}_stock_data.csv"
+            csv_filepath = os.path.join(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\myapp\data', csv_filename)
+            if csv_filepath:
+                data_stock=pd.read_csv(csv_filepath)
+            else:
+                data_stock = yf.download(stock.info['symbol'], start=start_date)
             timeframe=365
             date=str(data_stock.index[0])
             print("date:",date[:10],start_date[:10])

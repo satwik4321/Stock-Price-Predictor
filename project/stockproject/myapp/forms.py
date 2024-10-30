@@ -22,17 +22,21 @@ def load_ticker_choices():
 class StockForm(forms.Form):
     company_with_tickers = forms.ChoiceField(
         choices=load_ticker_choices(),
+<<<<<<< HEAD
         label="View Stocks and their ticker symbols",
+=======
+        label="View Stocks and their ticker symbol",
+>>>>>>> 91b95ddb419de4be6ef18f89d720b20160e01afb
         widget=forms.Select(attrs={'id': 'id_company_with_tickers'}),
         required=False
     )
-    choices = forms.ChoiceField(label='Select one of the stocks from the list:',choices=[('Select One','None Selected'),('AAPL', 'Apple'), ('GOOGL', 'Google'),('NVDA','NVIDIA'),('TSLA','Tesla'),('WBD','Warner Bros Discovery'),('AMZN','Amazon'),('INTC','Intel'),('NFLX','Netflix'),('META','Meta'),('F','Ford Motor')],required=False)
+    choices = forms.ChoiceField(label='Select one of the stocks from the list:',choices=[('Select One','None Selected'),('AAPL', 'Apple'), ('GOOGL', 'Google'),('NVDA','NVIDIA'),('TSLA','Tesla'),('WBD','Warner Bros Discovery'),('AMZN','Amazon'),('INTC','Intel'),('NFLX','Netflix'),('META','Meta'),('F','Ford Motor')],required=True)
     search = forms.CharField(label='Enter the ticker symbol for the stock:', max_length=100,required=False)
 
 import os
 from pathlib import Path
 def update_choices():
-    file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\Stock-Price-Predictor\project\stockproject\models')
+    file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
     list_stocks=[]
     list_stocks.append(('Select One','None Selected'))
     for fname in os.listdir(file_path):

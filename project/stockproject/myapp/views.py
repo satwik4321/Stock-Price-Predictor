@@ -10,6 +10,8 @@ from tensorflow import keras
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout, TimeDistributed
 from keras.optimizers import Adam
+from keras.layers import Dense, LSTM, Dropout, TimeDistributed
+from keras.optimizers import Adam
 import os #Importing OS to save a file to the machine
 sns.set_style('whitegrid')
 plt.style.use("fivethirtyeight")
@@ -43,6 +45,7 @@ def train_model(name,data,input,scaler,size):
     name_f=str(name+'.h5')
     full_path=os.path.join(file_path,name_f)
 
+
     if input==0:
         file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
         name_f=str(name+'.h5')
@@ -52,6 +55,11 @@ def train_model(name,data,input,scaler,size):
             model = keras.models.load_model(full_path)    
         else:
             model = Sequential()
+            model.add(LSTM(128, return_sequences=True, input_shape=(len(x[0]), 1)))
+            input_shape=(len(x[0]),1)
+            model.add(LSTM(64, return_sequences=True))
+            model.add(LSTM(32,return_sequences=True))
+            model.add(TimeDistributed(Dense(1)))
             model.add(LSTM(128, return_sequences=True, input_shape=(len(x[0]), 1)))
             input_shape=(len(x[0]),1)
             model.add(LSTM(64, return_sequences=True))
@@ -72,7 +80,22 @@ def train_model(name,data,input,scaler,size):
 
     x,y=create_lstm_data_test(data,size)
     test_loss = model.evaluate(x, y)
+
+    x,y=create_lstm_data_test(data,size)
+    test_loss = model.evaluate(x, y)
     print('Test Loss:', test_loss)
+    y_pred=model.predict(x[0].reshape(1,len(x[0]),1))
+    y_pred=y_pred.reshape(-1,1)
+    y=y.reshape(-1,1)
+    y_pred = scaler.inverse_transform(y_pred)
+    y_actual = scaler.inverse_transform(y)
+    y_actual=y_actual[:len(y_pred)]
+    MAE=0
+    for i in range(len(y_pred)):
+        MAE+=abs(y_pred[i]-y_actual[i])
+    MAE/=len(y_pred)
+    print("Mean absolute error:",MAE)
+
     y_pred=model.predict(x[0].reshape(1,len(x[0]),1))
     y_pred=y_pred.reshape(-1,1)
     y=y.reshape(-1,1)

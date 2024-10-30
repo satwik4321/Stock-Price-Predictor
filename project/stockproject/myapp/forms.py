@@ -22,7 +22,7 @@ def load_ticker_choices():
 class StockForm(forms.Form):
     company_with_tickers = forms.ChoiceField(
         choices=load_ticker_choices(),
-        label="View Stocks and their ticker symbol",
+        label="View Stocks and their ticker symbols",
         widget=forms.Select(attrs={'id': 'id_company_with_tickers'}),
         required=False
     )

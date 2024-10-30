@@ -5,8 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Price Prediction</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<<<<<<< HEAD
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+=======
+>>>>>>> 91b95ddb419de4be6ef18f89d720b20160e01afb
     <style>
-        .container {
+        /*.container {
             display: flex;
             position: relative;
             min-height: 89.5vh;
@@ -16,23 +21,23 @@
             flex: 1;
         }
         .right {
-            padding: 0;  /* Remove all padding for closer alignment to the line */
+            padding: 0;
             display: flex;
             flex-direction: column;
-            align-items: flex-start; /* Keep alignment to the left */
-            justify-content: flex-start; /* Start items from the top */
-            width: 200px; /* Control the width as needed */
+            align-items: flex-start;
+            justify-content: flex-start;
+            width: 200px;
             height: 100%;
-            margin-left: -10px; /* Adjust this value to shift left */
-        }
+            margin-left: -10px;
+        }*/
         .time-frames select {
             padding: 10px;
-            width: 100%; /* Adjust width as needed */
+            width: 100%;
             cursor: pointer;
         }
-        .time-frames {
-            width: 100%; /* Ensures the dropdown takes full width available */
-            margin-top: 20px; /* Adds some space above the dropdown */
+        /*.time-frames {
+            width: 100%; 
+            margin-top: 20px; 
             margin-left: -600px;
         }
         .vertical-line {
@@ -42,7 +47,7 @@
             bottom: 0;
             border-left: 2px solid #000;
             margin-top: -10px;
-        }
+        }*/
         hr {
             border: none;
             height: 2px;
@@ -60,19 +65,18 @@
             margin-bottom: 10px;
         }
         select {
-            width: 50%; /* Adjust the width of the dropdown */
-            max-width: 300px; /* Prevents dropdown from becoming too wide */
+            width: 50%;
+            max-width: 300px;
         }
-        /* Style adjustments specifically for the form area */
-        .form-area {
+        /*.form-area {
             display: flex;
             flex-direction: column;
-            width:15cm; /* Adjust this as necessary to fit content */
+            width:15cm;
             padding: 20px;
-            background-color: #fff; /* Optional for visibility */
-            box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Optional for styling */
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
             border-radius: 8px;
-        }
+        }*/
         button {
             width: 150px; /* Adjusted width */
             height: 40px; /* Adjusted height */
@@ -87,59 +91,116 @@
         button:hover {
             background-color: #0056b3;
         }
+        .card {
+            background-color: rgb(95, 167, 209); /* Unified background color */
+            border-radius: 0.25rem; /* Consistent rounding of corners */
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); /* Subtle shadow for depth */
+            padding: 1rem; /* Ensure consistent padding */
+            margin-bottom: 3rem; /* Consistent spacing below the card */
+        }
+        .card2 {
+            background-color: rgb(95, 167, 209); /* Unified background color */
+            border-radius: 0.25rem; /* Consistent rounding of corners */
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); /* Subtle shadow for depth */
+            padding: 0.05rem; /* Ensure consistent padding */
+            margin-bottom: 3rem; /* Consistent spacing below the card */
+        }
+        .card-body {
+            padding: 0; /* Remove padding if unnecessary */
+            width: auto; /* Adjust width or set a max-width if necessary */
+        }
+
+        /* CSS for the dropdown itself, ensure it is not wider than needed */
+        .select-time-frame {
+            width: 100%; 
+            max-width: 200px;
+            display: block;
+            margin-top: 10px;
+            margin-left: 10px;
+        }
+        .mb-5 {
+            margin-bottom: 3rem !important; /* Spacing below the card */
+        }
+        .p-3 {
+            padding: 1rem !important; /* Padding inside the card */
+        }
+        .bg-white {
+            background-color: #fff !important; /* Ensuring white background */
+        }
+        .rounded {
+            border-radius: 0.25rem !important; /* Rounded corners for aesthetics */
+        }
+        .shadow {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important; /* Stronger shadow for emphasis */
+        }
+        .vertical-line {
+            position:absolute;
+            left: 45%;
+            top: 0;
+            bottom: 0;
+            border-left: 2px solid #000;
+            margin-top: -15px;
+            margin-bottom: -230px;
+
+        }
     </style>
 </head>
-<script>
-    function selectTimeFrame(timeFrame) {
-        console.log("Selected Time Frame: ", timeFrame);
-        // Here you can add code to fetch data based on the selected time frame
-    }
-    </script>
-    
 <body>
-    <div align="center">
-        <h1>STOCK PRICE PREDICTION</h1>
-    </div>
-    <hr>
-    <div class="container">
-        <div class="vertical-line"></div>
-        <div class="left">
-            <br><br>
-            <div class="form-area">
-                <form method="post" action="{% url 'collect_history' %}">
-                    {% csrf_token %}
-                    <div>
-                        <label for="company_with_tickers">View stock names and ticker symbols:</label>
-                        {{ form.company_with_tickers }}
-                    </div>
-                    <br>
-                    <div>
-                        <label for="choices">Select one of the stocks from the list:</label>
-                        {{ form.choices }}
-                    </div>
-                    <div>
-                        <label for="search">Enter the ticker symbol for the stock "Eg. 'Apple', 'AAPL' ":</label>
-                        {{ form.search }}
-                    </div>
-                    <button type="submit">Submit</button>
-                </form>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h1>STOCK PRICE PREDICTION</h1>
             </div>
         </div>
-        <div class="right">
-            <div class="time-frames">
-                <select onchange="selectTimeFrame(this.value)">
-                    <option value="">Select Time Frame</option>
-                    <option value="1D">Daily</option>
-                    <option value="5D">Weekly</option>
-                    <option value="1M">Monthly</option>
-                    <option value="6M">Quarterly</option>
-                    <option value="YTD">Yearly</option>
-                    <option value="MAX">Max</option>
-                </select>
+        <hr>
+        <div class="row">
+            <div class="col-md-5">
+                <!-- Form Area -->
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post" action="{% url 'collect_history' %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="company_with_tickers">View stock names and ticker symbols:</label>
+                                {{ form.company_with_tickers }}
+                            </div>
+                            <div class="form-group">
+                                <label for="choices">Select one of the stocks from the list:</label>
+                                {{ form.choices }}
+                            </div>
+                            <div class="form-group">
+                                <label for="search">Enter the ticker symbol for the stock "Eg. 'Apple', 'AAPL' ":</label>
+                                {{ form.search }}
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <div class="vertical-line"></div>
+            </div>
+            <div class="col-md-2">
+                <!-- Time Frame Selection -->
+                <div class="card2">
+                    <div class="card-body">
+                        <select class="form-control select-time-frame" onchange="selectTimeFrame(this.value)">
+                            <option value="">Select Time Frame</option>
+                            <option value="1D">Daily</option>
+                            <option value="5D">Weekly</option>
+                            <option value="1M">Monthly</option>
+                            <option value="6M">Quarterly</option>
+                            <option value="YTD">Yearly</option>
+                            <option value="MAX">Max</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <script>
         $(document).ready(function() {

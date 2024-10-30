@@ -149,7 +149,7 @@ def save_stock_data(stock_name, stock_data):
 
         try:
             stock = yf.Ticker(stock_name)
-            data_stock = stock.history(start = "2020-01-01", end = None)
+            data_stock = stock.history(start = "2017-01-01", end = None)
 
             if data_stock.empty:
                     return JsonResponse({"error": "No data found for stock symbol"}, status = 4040)

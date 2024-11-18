@@ -32,6 +32,17 @@
             width: 100%;
             cursor: pointer;
         }
+        .progress-bar {
+            width: 100%;
+            background-color: #f3f3f3;
+        }
+        .progress {
+            height: 24px;
+            width: 0%;
+            background-color: #4caf50;
+            text-align: center;
+            color: white;
+        }
         /*.time-frames {
             width: 100%; 
             margin-top: 20px; 
@@ -143,6 +154,11 @@
     </style>
 </head>
 <body>
+    <div class="progress-bar">
+        <div id="progress" class="progress">0%</div>
+    </div>
+    <p id="epoch">Epoch: 0</p>
+    <p id="loss">Loss: N/A</p>
     <div class="container-fluid mt-4">
         <div class="row">
             <div class="col-md-12 text-center">
@@ -200,12 +216,29 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <script>
+        const message = "{{ message }}";  // Django template syntax
+        alert(message);  // Display the message in an alert box
         $(document).ready(function() {
             $('#id_company_with_tickers').select2({
                 placeholder: "Select a stock",
                 allowClear: true
             });
         });
+        const socket = new WebSocket("http://127.0.0.1:8000/")
+
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+
+            // Update progress bar and text
+            progressBar.style.width = data.progress + "%";
+            progressBar.innerHTML = data.progress + "%";
+            epochDisplay.innerHTML = "Epoch: " + data.epoch;
+            lossDisplay.innerHTML = "Loss: " + data.loss.toFixed(4);
+        };
+
+        socket.onclose = function(event) {
+            console.log("WebSocket closed unexpectedly");
+        };
     </script>
 </body>
 </html>

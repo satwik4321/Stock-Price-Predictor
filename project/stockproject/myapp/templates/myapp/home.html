@@ -174,7 +174,8 @@
                         <form method="post" action="{% url 'collect_history' %}">
                             {% csrf_token %}
                             <div class="form-group">
-                                <label for="company_with_tickers">View stock names and ticker symbols:</label>
+                                <label for="stocks">Please choose a stock from the list of stocks or enter a ticker symbol for the stock you are looking for searching the ticker symbols in the first list</label>
+                                <label for="company_with_tickers">View stock names and ticker symbols(The list only for looking up ticker symbols and not for choosing a stock):</label>
                                 {{ form.company_with_tickers }}
                             </div>
                             <div class="form-group">

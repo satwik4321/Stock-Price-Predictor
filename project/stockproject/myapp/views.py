@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 from .forms import StockForm
 from django.http import JsonResponse
 import pandas as pd
@@ -87,14 +88,25 @@ def train_model(name,data,input,scaler,size):
         name_f=str(name+'.h5')
         full_path=os.path.join(file_path,name_f)
         full_path=Path(full_path)
+        early_stopping = EarlyStopping(
+        monitor='val_loss',       # Metric to monitor (e.g., validation loss)
+        patience=10,              # Number of epochs with no improvement before stopping
+        restore_best_weights=True # Restore the best weights at the end of training
+        )
+
+        model_checkpoint = ModelCheckpoint(
+        filepath=full_path,       # Path to save the best model
+        monitor='val_loss',       # Metric to monitor
+        save_best_only=True,      # Save only when the metric improves
+        verbose=1)                 # Print a message when the model is saved
+
         if full_path.is_file():
             model = keras.models.load_model(full_path)    
         else:
             model = Sequential()
-            input_shape=(len(x[0]),1)
             model.add(LSTM(128, return_sequences=True, input_shape=(len(x[0]), 1)))
             model.add(LSTM(64, return_sequences=True))
-            model.add(LSTM(32,return_sequences=True))
+            model.add(LSTM(32, return_sequences=True, dropout=0.2, recurrent_dropout=0.2))
             model.add(TimeDistributed(Dense(1)))
             
             # Compile the model
@@ -102,12 +114,12 @@ def train_model(name,data,input,scaler,size):
             model.compile(optimizer=optimizer, loss='mean_absolute_error')
             
 
-# Create a fake request object
+            # Create a fake request object
             request = HttpRequest()
-# Optionally, you can set request.method or request.path
+            # Optionally, you can set request.method or request.path
             request.method = 'GET'
             my_view(request)
-            model.fit(x, y, batch_size=128, epochs=200)
+            model.fit(x, y, batch_size=128, epochs=400,callbacks=[early_stopping, model_checkpoint])
             file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
             name_f=str(name+'.h5')
             full_path=os.path.join(file_path,name_f)
@@ -117,12 +129,10 @@ def train_model(name,data,input,scaler,size):
         model = keras.models.load_model(full_path)
 
     x,y=create_lstm_data_test(data,size)
-    test_loss = model.evaluate(x, y)
-
-    x,y=create_lstm_data_test(data,size)
 
     test_loss = model.evaluate(x, y)
     print('Test Loss:', test_loss)
+    
     y_pred=model.predict(x[0].reshape(1,len(x[0]),1))
     y_pred=y_pred.reshape(-1,1)
     y=y.reshape(-1,1)
@@ -130,21 +140,10 @@ def train_model(name,data,input,scaler,size):
     y_actual = scaler.inverse_transform(y)
     y_actual=y_actual[:len(y_pred)]
     MAE=0
+    
     for i in range(len(y_pred)):
         MAE+=abs(y_pred[i]-y_actual[i])
-    MAE/=len(y_pred)
-    print("Mean absolute error:",MAE)
-
-    y_pred=model.predict(x[0].reshape(1,len(x[0]),1))
-    y_pred=y_pred.reshape(-1,1)
-    y=y.reshape(-1,1)
-    y_pred = scaler.inverse_transform(y_pred)
-    print("y_pred type:",type(y_pred))
-    y_actual = scaler.inverse_transform(y)
-    y_actual=y_actual[:len(y_pred)]
-    MAE=0
-    for i in range(len(y_pred)):
-        MAE+=abs(y_pred[i]-y_actual[i])
+    
     MAE/=len(y_pred)
     print("Mean absolute error:",MAE)
 

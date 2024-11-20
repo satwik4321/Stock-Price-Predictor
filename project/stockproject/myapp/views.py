@@ -96,12 +96,7 @@ def train_model(name,data,input,scaler,size):
             model.add(LSTM(64, return_sequences=True))
             model.add(LSTM(32,return_sequences=True))
             model.add(TimeDistributed(Dense(1)))
-            model.add(LSTM(128, return_sequences=True, input_shape=(len(x[0]), 1)))
-            input_shape=(len(x[0]),1)
-            model.add(LSTM(64, return_sequences=True))
-            model.add(LSTM(32,return_sequences=True))
-            model.add(TimeDistributed(Dense(1)))
-        
+            
             # Compile the model
             optimizer=Adam(learning_rate=0.018)
             model.compile(optimizer=optimizer, loss='mean_absolute_error')

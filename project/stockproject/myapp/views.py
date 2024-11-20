@@ -91,8 +91,8 @@ def train_model(name,data,input,scaler,size):
             model = keras.models.load_model(full_path)    
         else:
             model = Sequential()
-            model.add(LSTM(128, return_sequences=True, input_shape=(len(x[0]), 1)))
             input_shape=(len(x[0]),1)
+            model.add(LSTM(128, return_sequences=True, input_shape=(len(x[0]), 1)))
             model.add(LSTM(64, return_sequences=True))
             model.add(LSTM(32,return_sequences=True))
             model.add(TimeDistributed(Dense(1)))

@@ -94,11 +94,11 @@ def train_model(name,data,input,scaler,size):
         restore_best_weights=True # Restore the best weights at the end of training
         )
 
-        model_checkpoint = ModelCheckpoint(
+        '''model_checkpoint = ModelCheckpoint(
         filepath=full_path,       # Path to save the best model
         monitor='val_loss',       # Metric to monitor
         save_best_only=True,      # Save only when the metric improves
-        verbose=1)                 # Print a message when the model is saved
+        verbose=1)                 # Print a message when the model is saved'''
 
         if full_path.is_file():
             model = keras.models.load_model(full_path)    
@@ -118,8 +118,8 @@ def train_model(name,data,input,scaler,size):
             request = HttpRequest()
             # Optionally, you can set request.method or request.path
             request.method = 'GET'
-            my_view(request)
-            model.fit(x, y, batch_size=128, epochs=400,callbacks=[early_stopping, model_checkpoint])
+            #my_view(request)
+            model.fit(x, y, batch_size=128, epochs=400,callbacks=[early_stopping])
             file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
             name_f=str(name+'.h5')
             full_path=os.path.join(file_path,name_f)

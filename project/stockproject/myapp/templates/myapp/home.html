@@ -151,6 +151,10 @@
             margin-bottom: -230px;
 
         }
+        .select-placeholder option:first-child {
+            color: grey; /* Change the color to grey or another light color */
+            display: none; /* Hide from the dropdown */
+        }
     </style>
 </head>
 <body>
@@ -220,17 +224,55 @@
         const message = "{{ message }}";  // Django template syntax
         alert(message);  // Display the message in an alert box
         $(document).ready(function() {
+            // Initialize the select2 component for the company names
             $('#id_company_with_tickers').select2({
-                placeholder: "Select a stock",
+                placeholder: "Select a stock", // Initial visible but unselected state
                 allowClear: true
             });
+
+            // Function to ensure mutual exclusivity between the dropdown and the input field
+            function enforceSingleInput() {
+                var tickerSymbol = $('#id_search').val(); // Input for ticker symbol has an ID of 'id_search'
+                var companyName = $('#id_choices').val(); // Second dropdown has an ID of 'id_choices'
+
+                // If both inputs are filled, clear the last one modified by the user
+                if (tickerSymbol && companyName) {
+                    alert("Please select either one (Company Name or Ticker Symbol), not both.");
+                    $('#id_search').val(''); // Clear the ticker symbol field if both are filled
+                    $('#id_choices').val(''); // Optionally clear the dropdown if both are filled
+                    return false;
+                }
+                return true;
+            }
+
+            // Monitor changes on the company name dropdown
+            $('#id_choices').on('change', function() {
+                enforceSingleInput(); // Enforce the rule of single input
+            });
+
+            // Monitor input changes on the ticker symbol field
+            $('#id_search').on('input', function() {
+                enforceSingleInput(); // Enforce the rule of single input
+            });
+
+            // Prevent form submission if both inputs are filled
+            $('form').submit(function(event) {
+                if (!enforceSingleInput()) {
+                    event.preventDefault(); // Prevent form submission if validation fails
+                }
+            });
         });
-        const socket = new WebSocket("http://127.0.0.1:8000/")
+
+
+        const socket = new WebSocket("http://127.0.0.1:8000/");
 
         socket.onmessage = function(event) {
             const data = JSON.parse(event.data);
 
             // Update progress bar and text
+            var progressBar = document.getElementById('progress');
+            var epochDisplay = document.getElementById('epoch');
+            var lossDisplay = document.getElementById('loss');
             progressBar.style.width = data.progress + "%";
             progressBar.innerHTML = data.progress + "%";
             epochDisplay.innerHTML = "Epoch: " + data.epoch;
@@ -240,6 +282,6 @@
         socket.onclose = function(event) {
             console.log("WebSocket closed unexpectedly");
         };
-    </script>
+    </script>            
 </body>
 </html>

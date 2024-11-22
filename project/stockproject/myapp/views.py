@@ -18,6 +18,7 @@ import random
 import time
 import os #Importing OS to save a file to the machine
 sns.set_style('whitegrid')
+
 plt.style.use("fivethirtyeight")
 from pathlib import Path
 import os
@@ -166,7 +167,7 @@ def collect_history(request):
             start_date = "2017-01-03"
             csv_filename= f"{Name}_stock_data.csv"
             csv_filepath = os.path.join(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\myapp\data', csv_filename)
-            data_stock = yf.download(stock.info['symbol'], start=start_date)
+            data_stock = yf.download('AAPL', start=start_date)
             timeframe=365
             date=str(data_stock.index[0])
             if start_date[:10]!=date[:10]:

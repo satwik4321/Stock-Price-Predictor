@@ -139,6 +139,7 @@ def train_model(name,data,input,scaler,size):
     y_pred = scaler.inverse_transform(y_pred)
     y_actual = scaler.inverse_transform(y)
     y_actual=y_actual[:len(y_pred)]
+    home()
     MAE=0
     
     for i in range(len(y_pred)):
@@ -206,9 +207,114 @@ def save_stock_data(stock_name, stock_data):
             return f"Error: {str(e)}"
 
 
+from django.shortcuts import render
+from bokeh.plotting import figure
+from bokeh.models import ColumnDataSource, HoverTool
+from bokeh.embed import components
+import yfinance as yf
+import pandas as pd
+from datetime import datetime
+
+
 def home(request):
+    # Initialize the form
     form = StockForm()
-    return render(request, 'myapp/home.html', {'form': form})
+
+    interval = "1m"  # 1-minute interval
+    start_date = "2024-10-24"
+    end_date = "2024-10-25"
+
+    # Fetch stock data using yfinance
+    stock_data = yf.download(
+        "AAPL",
+        start=start_date,
+        end=end_date,
+        interval=interval,
+        progress=False
+    )
+    print(stock_data)
+    # Reset index and flatten MultiIndex columns
+    stock_data.reset_index(inplace=True)
+    stock_data.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in stock_data.columns]
+
+    # Dynamically rename Datetime/Date column
+    if 'Datetime_' in stock_data.columns:
+        stock_data.rename(columns={'Datetime_': 'Date'}, inplace=True)
+    elif 'Date_' in stock_data.columns:
+        stock_data.rename(columns={'Date_': 'Date'}, inplace=True)
+
+    # Ensure the Date column exists and is timezone-free
+    if 'Date' in stock_data.columns:
+        stock_data['Date'] = pd.to_datetime(stock_data['Date']).dt.tz_localize(None)
+    '''else:
+        raise ValueError("Date column is missing in the fetched stock data.")'''
+
+    # Rename remaining columns for standardization
+    stock_data.rename(columns={
+        'Open_AAPL': 'Open',
+        'High_AAPL': 'High',
+        'Low_AAPL': 'Low',
+        'Close_AAPL': 'Close',
+        'Adj Close_AAPL': 'Adj_Close',
+        'Volume_AAPL': 'Volume',
+    }, inplace=True)
+
+    # Dynamically calculate candlestick width based on interval
+    interval_mapping = {
+        "1m": 60 * 1000,        # 1 minute in milliseconds
+        "5m": 5 * 60 * 1000,    # 5 minutes in milliseconds
+        "15m": 15 * 60 * 1000,  # 15 minutes in milliseconds
+        "30m": 30 * 60 * 1000,  # 30 minutes in milliseconds
+        "1h": 60 * 60 * 1000,   # 1 hour in milliseconds
+        "1d": 24 * 60 * 60 * 1000,  # 1 day in milliseconds
+    }
+    width = interval_mapping.get(interval, 12 * 60 * 60 * 1000)  # Default to 12 hours if interval is unknown
+
+    # Create a candlestick chart
+    inc = stock_data['Close'] > stock_data['Open']
+    dec = stock_data['Open'] > stock_data['Close']
+
+    source_inc = ColumnDataSource(data=stock_data[inc])
+    source_dec = ColumnDataSource(data=stock_data[dec])
+
+    p = figure(
+        x_axis_type="datetime",
+        height=600,
+        width=1000,
+        title="Candlestick Chart",
+        sizing_mode="stretch_width"
+    )
+    p.grid.grid_line_alpha = 0.3
+
+    # Plot increasing candles (green)
+    p.segment(x0='Datetime', y0='Low', x1='Datetime', y1='High', color="black", source=source_inc)
+    p.vbar(x='Datetime', width=width, top='Open', bottom='Close', fill_color="#D5E1DD", line_color="black", source=source_inc)
+
+    # Plot decreasing candles (red)
+    p.segment(x0='Datetime', y0='Low', x1='Datetime', y1='High', color="black", source=source_dec)
+    p.vbar(x='Datetime', width=width, top='Open', bottom='Close', fill_color="#F2583E", line_color="black", source=source_dec)
+
+    # Add hover tool for interactivity
+    hover = HoverTool(
+        tooltips=[
+            ("Datetime", "@Datetime{%F %T}"),
+            ("Open", "@Open{0.2f}"),
+            ("High", "@High{0.2f}"),
+            ("Low", "@Low{0.2f}"),
+            ("Close", "@Close{0.2f}"),
+        ],
+        formatters={
+            '@Datetime': 'datetime',
+        },
+        mode='vline'
+    )
+    p.add_tools(hover)
+
+    # Generate the script and div for the chart
+    script, div = components(p)
+
+    # Render the home.html template with the Bokeh chart
+    return render(request, 'myapp/home.html', {'form': form, 'script': script, 'div': div})
 
 def my_view(request):
     context = {'message': 'Hello from Django!'}

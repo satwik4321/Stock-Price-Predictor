@@ -15,6 +15,7 @@ from keras.optimizers import Adam
 from django.shortcuts import render, redirect
 import os #Importing OS to save a file to the machine
 sns.set_style('whitegrid')
+
 plt.style.use("fivethirtyeight")
 from pathlib import Path
 import os
@@ -52,6 +53,21 @@ def train_model(name,data,input,scaler,size):
         name_f=str(name+'.h5')
         full_path=os.path.join(file_path,name_f)
         full_path=Path(full_path)
+<<<<<<< HEAD
+=======
+        early_stopping = EarlyStopping(
+        monitor='val_loss',       # Metric to monitor (e.g., validation loss)
+        patience=10,              # Number of epochs with no improvement before stopping
+        restore_best_weights=True # Restore the best weights at the end of training
+        )
+
+        '''model_checkpoint = ModelCheckpoint(
+        filepath=full_path,       # Path to save the best model
+        monitor='val_loss',       # Metric to monitor
+        save_best_only=True,      # Save only when the metric improves
+        verbose=1)                 # Print a message when the model is saved'''
+
+>>>>>>> eef20da5d44c95ebb0c41f6b72e9955c7caef270
         if full_path.is_file():
             model = keras.models.load_model(full_path)    
         else:
@@ -70,8 +86,20 @@ def train_model(name,data,input,scaler,size):
             # Compile the model
             optimizer=Adam(learning_rate=0.018)
             model.compile(optimizer=optimizer, loss='mean_absolute_error')
+<<<<<<< HEAD
             model.fit(x, y, batch_size=128, epochs=200)
             file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\models')
+=======
+            
+
+            # Create a fake request object
+            request = HttpRequest()
+            # Optionally, you can set request.method or request.path
+            request.method = 'GET'
+            my_view(request)
+            model.fit(x, y, batch_size=128, epochs=400,callbacks=[early_stopping])
+            file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
+>>>>>>> eef20da5d44c95ebb0c41f6b72e9955c7caef270
             name_f=str(name+'.h5')
             full_path=os.path.join(file_path,name_f)
             print(full_path)
@@ -91,6 +119,9 @@ def train_model(name,data,input,scaler,size):
     y_pred = scaler.inverse_transform(y_pred)
     y_actual = scaler.inverse_transform(y)
     y_actual=y_actual[:len(y_pred)]
+    request = HttpRequest()
+    request.method = 'GET'
+    home(request)
     MAE=0
     for i in range(len(y_pred)):
         MAE+=abs(y_pred[i]-y_actual[i])
@@ -126,11 +157,8 @@ def collect_history(request):
             print(stock)
             start_date = "2017-01-03"
             csv_filename= f"{Name}_stock_data.csv"
-            csv_filepath = os.path.join(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\myapp\data', csv_filename)
-            if csv_filepath:
-                data_stock=pd.read_csv(csv_filepath)
-            else:
-                data_stock = yf.download(stock.info['symbol'], start=start_date)
+            csv_filepath = os.path.join(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\myapp\data', csv_filename)
+            data_stock = yf.download('AAPL', start=start_date)
             timeframe=365
 
             date=str(data_stock.index[0])
@@ -149,7 +177,7 @@ def collect_history(request):
         close_prices_scaled = scaler.fit_transform(data_close)
         train_model(Name,close_prices_scaled,input,scaler,timeframe)
         # Return a JSON response
-        return render(request, 'myapp/home.html', {'form': form, 'message': 'Data fetched successfully!', 'data': data_stock.to_dict()})
+        return render(request, 'myapp/home.html', {'form': form, 'data': data_stock.to_dict()})
     return JsonResponse({"error": "Invalid request"}, status=400)
 
 
@@ -206,6 +234,115 @@ def handle_stock_submission(request):
 
 
 
+from django.shortcuts import render
+from bokeh.plotting import figure
+from bokeh.models import ColumnDataSource, HoverTool
+from bokeh.embed import components
+import yfinance as yf
+import pandas as pd
+from datetime import datetime
+
+
 def home(request):
+    # Initialize the form
     form = StockForm()
-    return render(request, 'myapp/home.html', {'form': form})
+
+    interval = "1m"  # 1-minute interval
+    start_date = "2024-10-24"
+    end_date = "2024-10-25"
+
+    # Fetch stock data using yfinance
+    stock_data = yf.download(
+        "AAPL",
+        start=start_date,
+        end=end_date,
+        interval=interval,
+        progress=False
+    )
+    print(stock_data)
+    # Reset index and flatten MultiIndex columns
+    stock_data.reset_index(inplace=True)
+    stock_data.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in stock_data.columns]
+
+    # Dynamically rename Datetime/Date column
+    if 'Datetime_' in stock_data.columns:
+        stock_data.rename(columns={'Datetime_': 'Date'}, inplace=True)
+    elif 'Date_' in stock_data.columns:
+        stock_data.rename(columns={'Date_': 'Date'}, inplace=True)
+
+    # Ensure the Date column exists and is timezone-free
+    if 'Date' in stock_data.columns:
+        stock_data['Date'] = pd.to_datetime(stock_data['Date']).dt.tz_localize(None)
+    '''else:
+        raise ValueError("Date column is missing in the fetched stock data.")'''
+
+    # Rename remaining columns for standardization
+    stock_data.rename(columns={
+        'Open_AAPL': 'Open',
+        'High_AAPL': 'High',
+        'Low_AAPL': 'Low',
+        'Close_AAPL': 'Close',
+        'Adj Close_AAPL': 'Adj_Close',
+        'Volume_AAPL': 'Volume',
+    }, inplace=True)
+
+    # Dynamically calculate candlestick width based on interval
+    interval_mapping = {
+        "1m": 60 * 1000,        # 1 minute in milliseconds
+        "5m": 5 * 60 * 1000,    # 5 minutes in milliseconds
+        "15m": 15 * 60 * 1000,  # 15 minutes in milliseconds
+        "30m": 30 * 60 * 1000,  # 30 minutes in milliseconds
+        "1h": 60 * 60 * 1000,   # 1 hour in milliseconds
+        "1d": 24 * 60 * 60 * 1000,  # 1 day in milliseconds
+    }
+    width = interval_mapping.get(interval, 12 * 60 * 60 * 1000)  # Default to 12 hours if interval is unknown
+
+    # Create a candlestick chart
+    inc = stock_data['Close'] > stock_data['Open']
+    dec = stock_data['Open'] > stock_data['Close']
+
+    source_inc = ColumnDataSource(data=stock_data[inc])
+    source_dec = ColumnDataSource(data=stock_data[dec])
+
+    p = figure(
+        x_axis_type="datetime",
+        height=600,
+        width=1000,
+        title="Candlestick Chart",
+        sizing_mode="stretch_width"
+    )
+    p.grid.grid_line_alpha = 0.3
+
+    # Plot increasing candles (green)
+    p.segment(x0='Datetime', y0='Low', x1='Datetime', y1='High', color="black", source=source_inc)
+    p.vbar(x='Datetime', width=width, top='Open', bottom='Close', fill_color="#D5E1DD", line_color="black", source=source_inc)
+
+    # Plot decreasing candles (red)
+    p.segment(x0='Datetime', y0='Low', x1='Datetime', y1='High', color="black", source=source_dec)
+    p.vbar(x='Datetime', width=width, top='Open', bottom='Close', fill_color="#F2583E", line_color="black", source=source_dec)
+
+    # Add hover tool for interactivity
+    hover = HoverTool(
+        tooltips=[
+            ("Datetime", "@Datetime{%F %T}"),
+            ("Open", "@Open{0.2f}"),
+            ("High", "@High{0.2f}"),
+            ("Low", "@Low{0.2f}"),
+            ("Close", "@Close{0.2f}"),
+        ],
+        formatters={
+            '@Datetime': 'datetime',
+        },
+        mode='vline'
+    )
+    p.add_tools(hover)
+
+    # Generate the script and div for the chart
+    script, div = components(p)
+
+    # Render the home.html template with the Bokeh chart
+    return render(request, 'myapp/home.html', {'form': form, 'script': script, 'div': div})
+
+def my_view(request):
+    context = {'message': 'Hello from Django!'}
+    return render(request, 'templates\myapp\home.html', context)

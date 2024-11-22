@@ -139,7 +139,7 @@ def train_model(name,data,input,scaler,size):
     y_pred = scaler.inverse_transform(y_pred)
     y_actual = scaler.inverse_transform(y)
     y_actual=y_actual[:len(y_pred)]
-    home()
+    home(request)
     MAE=0
     
     for i in range(len(y_pred)):

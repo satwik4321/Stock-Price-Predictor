@@ -8,25 +8,6 @@
     <!-- Bootstrap CSS CDN -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /*.container {
-            display: flex;
-            position: relative;
-            min-height: 89.5vh;
-            height: 100%; 
-        }
-        .left{
-            flex: 1;
-        }
-        .right {
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: flex-start;
-            width: 200px;
-            height: 100%;
-            margin-left: -10px;
-        }*/
         .time-frames select {
             padding: 10px;
             width: 100%;
@@ -43,19 +24,6 @@
             text-align: center;
             color: white;
         }
-        /*.time-frames {
-            width: 100%; 
-            margin-top: 20px; 
-            margin-left: -600px;
-        }
-        .vertical-line {
-            position:absolute;
-            left: 45%;
-            top: 0;
-            bottom: 0;
-            border-left: 2px solid #000;
-            margin-top: -10px;
-        }*/
         hr {
             border: none;
             height: 2px;
@@ -69,77 +37,40 @@
         }
         label, select, input, button {
             display: block;
-            width: 80%; /* Ensures form elements take full width of the form */
+            width: 80%; 
             margin-bottom: 10px;
         }
         select {
             width: 50%;
             max-width: 300px;
         }
-        /*.form-area {
-            display: flex;
-            flex-direction: column;
-            width:15cm;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            border-radius: 8px;
-        }*/
         button {
-            width: 150px; /* Adjusted width */
-            height: 40px; /* Adjusted height */
+            width: 150px; 
+            height: 40px; 
             padding: 10px 20px;
             background-color: #007bff;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 20px; /* Adjusted font size */
+            font-size: 20px; 
         }
         button:hover {
             background-color: #0056b3;
         }
         .card {
-            background-color: rgb(95, 167, 209); /* Unified background color */
-            border-radius: 0.25rem; /* Consistent rounding of corners */
-            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); /* Subtle shadow for depth */
-            padding: 1rem; /* Ensure consistent padding */
-            margin-bottom: 3rem; /* Consistent spacing below the card */
+            background-color: rgb(95, 167, 209);
+            border-radius: 0.25rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            padding: 1rem;
+            margin-bottom: 3rem;
         }
         .card2 {
-            background-color: rgb(95, 167, 209); /* Unified background color */
-            border-radius: 0.25rem; /* Consistent rounding of corners */
-            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); /* Subtle shadow for depth */
-            padding: 0.05rem; /* Ensure consistent padding */
-            margin-bottom: 3rem; /* Consistent spacing below the card */
-        }
-        .card-body {
-            padding: 0; /* Remove padding if unnecessary */
-            width: auto; /* Adjust width or set a max-width if necessary */
-        }
-
-        /* CSS for the dropdown itself, ensure it is not wider than needed */
-        .select-time-frame {
-            width: 100%; 
-            max-width: 200px;
-            display: block;
-            margin-top: 10px;
-            margin-left: 10px;
-        }
-        .mb-5 {
-            margin-bottom: 3rem !important; /* Spacing below the card */
-        }
-        .p-3 {
-            padding: 1rem !important; /* Padding inside the card */
-        }
-        .bg-white {
-            background-color: #fff !important; /* Ensuring white background */
-        }
-        .rounded {
-            border-radius: 0.25rem !important; /* Rounded corners for aesthetics */
-        }
-        .shadow {
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important; /* Stronger shadow for emphasis */
+            background-color: rgb(95, 167, 209);
+            border-radius: 0.25rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            padding: 0.05rem;
+            margin-bottom: 3rem;
         }
         .vertical-line {
             position:absolute;
@@ -149,9 +80,11 @@
             border-left: 2px solid #000;
             margin-top: -15px;
             margin-bottom: -230px;
-
         }
     </style>
+    <!-- Load BokehJS -->
+    <link href="https://cdn.bokeh.org/bokeh/release/bokeh-3.6.1.min.css" rel="stylesheet">
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.6.1.min.js"></script>
 </head>
 <body>
     <div class="progress-bar">
@@ -210,6 +143,18 @@
                     </div>
                 </div>
             </div>
+            <div class="col-md-8">
+                <!-- Bokeh Plot -->
+                <div class="card">
+                    <div class="card-body">
+                        <h3>Bokeh Plot</h3>
+                        <div>
+                            {{ div|safe }}
+                        </div>
+                        {{ script|safe }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -243,3 +188,4 @@
     </script>
 </body>
 </html>
+

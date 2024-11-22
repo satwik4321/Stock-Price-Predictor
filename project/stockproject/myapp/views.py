@@ -119,7 +119,7 @@ def train_model(name,data,input,scaler,size):
             request = HttpRequest()
             # Optionally, you can set request.method or request.path
             request.method = 'GET'
-            #my_view(request)
+            my_view(request)
             model.fit(x, y, batch_size=128, epochs=400,callbacks=[early_stopping])
             file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
             name_f=str(name+'.h5')
@@ -140,6 +140,8 @@ def train_model(name,data,input,scaler,size):
     y_pred = scaler.inverse_transform(y_pred)
     y_actual = scaler.inverse_transform(y)
     y_actual=y_actual[:len(y_pred)]
+    request = HttpRequest()
+    request.method = 'GET'
     home(request)
     MAE=0
     
@@ -180,7 +182,7 @@ def collect_history(request):
         close_prices_scaled = scaler.fit_transform(data_close)
         train_model(Name,close_prices_scaled,input,scaler,timeframe)
         # Return a JSON response
-        return render(request, 'myapp/home.html', {'form': form, 'message': 'Data fetched successfully!', 'data': data_stock.to_dict()})
+        return render(request, 'myapp/home.html', {'form': form, 'data': data_stock.to_dict()})
     return JsonResponse({"error": "Invalid request"}, status=400)
 
 

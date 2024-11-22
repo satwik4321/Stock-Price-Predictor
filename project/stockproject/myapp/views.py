@@ -81,11 +81,11 @@ def train_model(name,data,input,scaler,size):
             }
         )'''
     x,y=create_lstm_data_train(data,size)
-    file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
+    file_path = Path(r'/home/zach/Documents/GitHub/Stock-Price-Predictor/project/stockproject/models')
     name_f=str(name+'.h5')
     full_path=os.path.join(file_path,name_f)
     if input==0:
-        file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
+        file_path = Path(r'C/home/zach/Documents/GitHub/Stock-Price-Predictor/project/stockproject/models')
         name_f=str(name+'.h5')
         full_path=os.path.join(file_path,name_f)
         full_path=Path(full_path)
@@ -119,9 +119,9 @@ def train_model(name,data,input,scaler,size):
             request = HttpRequest()
             # Optionally, you can set request.method or request.path
             request.method = 'GET'
-            my_view(request)
-            model.fit(x, y, batch_size=128, epochs=400,callbacks=[early_stopping])
-            file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
+            #my_view(request)
+            model.fit(x, y, batch_size=128, epochs=50,callbacks=[early_stopping])
+            file_path = Path(r'C/home/zach/Documents/GitHub/Stock-Price-Predictor/project/stockproject/models')
             name_f=str(name+'.h5')
             full_path=os.path.join(file_path,name_f)
             print(full_path)
@@ -168,7 +168,7 @@ def collect_history(request):
             print(stock)
             start_date = "2017-01-03"
             csv_filename= f"{Name}_stock_data.csv"
-            csv_filepath = os.path.join(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\myapp\data', csv_filename)
+            csv_filepath = os.path.join(r'/home/zach/Documents/GitHub/Stock-Price-Predictor/project/stockproject/myapp/data', csv_filename)
             data_stock = yf.download('AAPL', start=start_date)
             timeframe=365
             date=str(data_stock.index[0])
@@ -201,7 +201,7 @@ def save_stock_data(stock_name, stock_data):
             stock_data_folder = os.path.join(project_root, 'stockproject')
             
             csv_filename= f"{stock_name}_stock_data.csv"
-            csv_filepath = os.path.join(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\myapp\data', csv_filename)
+            csv_filepath = os.path.join(r'/home/zach/Documents/GitHub/Stock-Price-Predictor/project/stockproject/myapp/data', csv_filename)
             data_stock.to_csv(csv_filepath)
 
             return f"Stock data saved to: {csv_filename}"
@@ -319,6 +319,7 @@ def home(request):
     # Render the home.html template with the Bokeh chart
     return render(request, 'myapp/home.html', {'form': form, 'script': script, 'div': div})
 
-def my_view(request):
+'''def my_view(request):
     context = {'message': 'Hello from Django!'}
     return render(request, 'templates\myapp\home.html', context)
+'''

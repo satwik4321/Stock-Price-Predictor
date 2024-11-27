@@ -18,10 +18,10 @@ from django.urls import path
 from myapp import views
 from django.urls import path
 from myapp import views
-from myapp.views import handle_stock_submission
+#from myapp.views import handle_stock_submission
 
 urlpatterns = [
     path('collect_history/', views.collect_history, name='collect_history'),
-    path('stock-form/', handle_stock_submission, name='stock_form'),
+    #path('stock-form/', handle_stock_submission, name='stock_form'),
     path('', views.home, name='home')
 ]

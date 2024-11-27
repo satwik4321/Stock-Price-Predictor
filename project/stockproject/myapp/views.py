@@ -18,7 +18,6 @@ import random
 import time
 import os #Importing OS to save a file to the machine
 sns.set_style('whitegrid')
-
 plt.style.use("fivethirtyeight")
 from pathlib import Path
 import os
@@ -95,11 +94,11 @@ def train_model(name,data,input,scaler,size):
         restore_best_weights=True # Restore the best weights at the end of training
         )
 
-        '''model_checkpoint = ModelCheckpoint(
+        model_checkpoint = ModelCheckpoint(
         filepath=full_path,       # Path to save the best model
         monitor='val_loss',       # Metric to monitor
         save_best_only=True,      # Save only when the metric improves
-        verbose=1)                 # Print a message when the model is saved'''
+        verbose=1)                 # Print a message when the model is saved
 
         if full_path.is_file():
             model = keras.models.load_model(full_path)    
@@ -120,7 +119,7 @@ def train_model(name,data,input,scaler,size):
             # Optionally, you can set request.method or request.path
             request.method = 'GET'
             my_view(request)
-            model.fit(x, y, batch_size=128, epochs=400,callbacks=[early_stopping])
+            model.fit(x, y, batch_size=128, epochs=400,callbacks=[early_stopping, model_checkpoint])
             file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
             name_f=str(name+'.h5')
             full_path=os.path.join(file_path,name_f)
@@ -140,9 +139,6 @@ def train_model(name,data,input,scaler,size):
     y_pred = scaler.inverse_transform(y_pred)
     y_actual = scaler.inverse_transform(y)
     y_actual=y_actual[:len(y_pred)]
-    request = HttpRequest()
-    request.method = 'GET'
-    home(request)
     MAE=0
     
     for i in range(len(y_pred)):
@@ -151,40 +147,95 @@ def train_model(name,data,input,scaler,size):
     MAE/=len(y_pred)
     print("Mean absolute error:",MAE)
 
+    # Define the number of future steps to predict
+    future_steps = 30  # Predict 30 days into the future
+
+    # Generate predictions
+    future_predictions = predict_future(model, scaler, data, size, future_steps)
+
+    # Pass future_predictions for visualization
+    return future_predictions
+
+
+
+
+
+
+
+
+
+
+
 def collect_history(request):
     if request.method == 'POST':
-        form=StockForm(request.POST)
+        form = StockForm(request.POST)
         print(request.POST)
-        input=0
+        input = 0
         if form.is_valid():
-            if form.cleaned_data['search']!="":
-                Name=form.cleaned_data['search']
+            if form.cleaned_data['search'] != "":
+                Name = form.cleaned_data['search']
+            elif form.cleaned_data['choices'] != "Select One":
+                Name = form.cleaned_data['choices']
+                input = 1
             else:
-                if form.cleaned_data['choices']!="Select One":
-                    Name=form.cleaned_data['choices']
-                    input=1
-                    
-            stock=yf.Ticker(Name)
-            print(stock)
-            start_date = "2017-01-03"
-            csv_filename= f"{Name}_stock_data.csv"
-            csv_filepath = os.path.join(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\myapp\data', csv_filename)
-            data_stock = yf.download('AAPL', start=start_date)
-            timeframe=365
-            date=str(data_stock.index[0])
-            if start_date[:10]!=date[:10]:
-                timeframe=60
-            save_stock_data(Name, data_stock)
+                return JsonResponse({"error": "Invalid input"}, status=400)
+
+            try:
+                stock = yf.Ticker(Name)
+                start_date = "2017-01-03"
+                data_stock = yf.download(stock.info['symbol'], start=start_date)
+
+                if data_stock.empty:
+                    return JsonResponse({"error": "No data found for the given stock"}, status=404)
+
+                # Save stock data
+                save_stock_data(Name, data_stock)
+
+                # Prepare data for training
+                data_close = data_stock['Close'].values.reshape(-1, 1)
+                scaler = MinMaxScaler(feature_range=(0, 1))
+                close_prices_scaled = scaler.fit_transform(data_close)
+
+                # Train the model and predict future values
+                timeframe = 365 if len(data_close) > 365 else 60
+                model, future_predictions = train_model(Name, close_prices_scaled, input, scaler, timeframe, future_steps=30)
+
+                # Prepare predictions for visualization
+                last_date = data_stock.index[-1]
+                prediction_dates = [last_date + timedelta(days=i) for i in range(1, 31)]
+                prediction_df = pd.DataFrame({
+                    'Date': prediction_dates,
+                    'Predicted_Close': future_predictions.flatten()
+                })
+
+                # Prepare historical data for visualization
+                historical_df = data_stock[['Close']].reset_index()
+                historical_df.rename(columns={'Close': 'Historical_Close', 'Date': 'Date'}, inplace=True)
+
+                # Merge historical and prediction data for a unified visualization
+                combined_data = pd.concat([
+                    historical_df[['Date', 'Historical_Close']],
+                    prediction_df
+                ], ignore_index=True)
+
+                return render(
+                    request,
+                    'myapp/home.html',
+                    {
+                        'form': form,
+                        'message': 'Data fetched successfully!',
+                        'historical_data': historical_df.to_dict('records'),
+                        'predictions': prediction_df.to_dict('records'),
+                        'combined_data': combined_data.to_dict('records')
+                    }
+                )
+            except Exception as e:
+                print(f"Error fetching or processing stock data: {e}")
+                return JsonResponse({"error": str(e)}, status=500)
         else:
             print(form.errors)
-        data_close=data_stock['Close'].values.reshape(-1,1)
-        scaler = MinMaxScaler(feature_range=(0, 1))
-        close_prices_scaled = scaler.fit_transform(data_close)
-        train_model(Name,close_prices_scaled,input,scaler,timeframe)
-        # Return a JSON response
-        return render(request, 'myapp/home.html', {'form': form, 'data': data_stock.to_dict()})
-    return JsonResponse({"error": "Invalid request"}, status=400)
-
+            return JsonResponse({"error": "Form is not valid", "details": form.errors}, status=400)
+    return JsonResponse({"error": "Invalid request method"}, status=400)
 
 #Store the data collected from the Collect_History function to be saved to a csv file
 
@@ -217,17 +268,18 @@ from bokeh.embed import components
 import yfinance as yf
 import pandas as pd
 from datetime import datetime
+from datetime import timedelta
 
 
-def home(request):
+'''def home(request):
     # Initialize the form
     form = StockForm()
 
+    # Fetch historical stock data
     interval = "1m"  # 1-minute interval
     start_date = "2024-10-24"
     end_date = "2024-10-25"
 
-    # Fetch stock data using yfinance
     stock_data = yf.download(
         "AAPL",
         start=start_date,
@@ -235,7 +287,7 @@ def home(request):
         interval=interval,
         progress=False
     )
-    print(stock_data)
+
     # Reset index and flatten MultiIndex columns
     stock_data.reset_index(inplace=True)
     stock_data.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in stock_data.columns]
@@ -243,14 +295,18 @@ def home(request):
     # Dynamically rename Datetime/Date column
     if 'Datetime_' in stock_data.columns:
         stock_data.rename(columns={'Datetime_': 'Date'}, inplace=True)
+    elif 'Datetime' in stock_data.columns:
+        stock_data.rename(columns={'Datetime': 'Date'}, inplace=True)
     elif 'Date_' in stock_data.columns:
         stock_data.rename(columns={'Date_': 'Date'}, inplace=True)
 
     # Ensure the Date column exists and is timezone-free
     if 'Date' in stock_data.columns:
         stock_data['Date'] = pd.to_datetime(stock_data['Date']).dt.tz_localize(None)
-    '''else:
-        raise ValueError("Date column is missing in the fetched stock data.")'''
+    elif 'Datetime' in stock_data.columns:
+        stock_data['Datetime'] = pd.to_datetime(stock_data['Datetime']).dt.tz_localize(None)
+    else:
+        raise ValueError("Date column is missing in the fetched stock data.")
 
     # Rename remaining columns for standardization
     stock_data.rename(columns={
@@ -273,7 +329,23 @@ def home(request):
     }
     width = interval_mapping.get(interval, 12 * 60 * 60 * 1000)  # Default to 12 hours if interval is unknown
 
-    # Create a candlestick chart
+    # Generate synthetic predicted data
+    last_date = stock_data['Date'].iloc[-1]
+    predicted_dates = [last_date + timedelta(minutes=i) for i in range(1, 31)]  # Example future 30 intervals
+    predicted_close = [stock_data['Close'].iloc[-1] + i * 0.1 for i in range(1, 31)]  # Example predictions
+
+    # Create a DataFrame for predicted candlestick data
+    prediction_df = pd.DataFrame({
+        'Date': predicted_dates,
+        'Predicted_Close': predicted_close
+    })
+
+    # Generate synthetic OHLC values for predictions
+    prediction_df['Open'] = prediction_df['Predicted_Close'] + np.random.uniform(-0.5, 0.5, size=len(prediction_df))
+    prediction_df['High'] = prediction_df[['Open', 'Predicted_Close']].max(axis=1) + np.random.uniform(0.1, 0.3, size=len(prediction_df))
+    prediction_df['Low'] = prediction_df[['Open', 'Predicted_Close']].min(axis=1) - np.random.uniform(0.1, 0.3, size=len(prediction_df))
+
+    # Create candlestick chart for historical data
     inc = stock_data['Close'] > stock_data['Open']
     dec = stock_data['Open'] > stock_data['Close']
 
@@ -284,40 +356,116 @@ def home(request):
         x_axis_type="datetime",
         height=600,
         width=1000,
-        title="Candlestick Chart",
+        title="Stock Price: Historical and Predicted",
         sizing_mode="stretch_width"
     )
     p.grid.grid_line_alpha = 0.3
 
-    # Plot increasing candles (green)
-    p.segment(x0='Datetime', y0='Low', x1='Datetime', y1='High', color="black", source=source_inc)
-    p.vbar(x='Datetime', width=width, top='Open', bottom='Close', fill_color="#D5E1DD", line_color="black", source=source_inc)
+    # Plot historical increasing candlesticks (green)
+    p.segment(x0='Date', y0='Low', x1='Date', y1='High', color="black", source=source_inc)
+    p.vbar(x='Date', width=width, top='Open', bottom='Close', fill_color="#D5E1DD", line_color="black", source=source_inc)
 
-    # Plot decreasing candles (red)
-    p.segment(x0='Datetime', y0='Low', x1='Datetime', y1='High', color="black", source=source_dec)
-    p.vbar(x='Datetime', width=width, top='Open', bottom='Close', fill_color="#F2583E", line_color="black", source=source_dec)
+    # Plot historical decreasing candlesticks (red)
+    p.segment(x0='Date', y0='Low', x1='Date', y1='High', color="black", source=source_dec)
+    p.vbar(x='Date', width=width, top='Open', bottom='Close', fill_color="#F2583E", line_color="black", source=source_dec)
+
+    # Create candlestick chart for predicted data
+    pred_inc = prediction_df['Predicted_Close'] > prediction_df['Open']
+    pred_dec = prediction_df['Open'] > prediction_df['Predicted_Close']
+
+    predicted_inc_source = ColumnDataSource(data=prediction_df[pred_inc])
+    predicted_dec_source = ColumnDataSource(data=prediction_df[pred_dec])
+
+    # Plot predicted increasing candlesticks (light green)
+    p.segment(
+        x0='Date', y0='Low', x1='Date', y1='High',
+        color="black", source=predicted_inc_source
+    )
+    p.vbar(
+        x='Date', width=width / 2,
+        top='Open', bottom='Predicted_Close',
+        fill_color="#A7E9AF", line_color="black",
+        source=predicted_inc_source,
+        legend_label="Predicted (Inc)"
+    )
+
+    # Plot predicted decreasing candlesticks (light red)
+    p.segment(
+        x0='Date', y0='Low', x1='Date', y1='High',
+        color="black", source=predicted_dec_source
+    )
+    p.vbar(
+        x='Date', width=width / 2,
+        top='Open', bottom='Predicted_Close',
+        fill_color="#F0A7A7", line_color="black",
+        source=predicted_dec_source,
+        legend_label="Predicted (Dec)"
+    )
 
     # Add hover tool for interactivity
     hover = HoverTool(
         tooltips=[
-            ("Datetime", "@Datetime{%F %T}"),
+            ("Date", "@Date{%F %T}"),
             ("Open", "@Open{0.2f}"),
             ("High", "@High{0.2f}"),
             ("Low", "@Low{0.2f}"),
             ("Close", "@Close{0.2f}"),
+            ("Predicted Close", "@Predicted_Close{0.2f}")
         ],
         formatters={
-            '@Datetime': 'datetime',
+            '@Date': 'datetime',
         },
         mode='vline'
     )
     p.add_tools(hover)
 
+    # Finalize plot appearance
+    p.legend.location = "top_left"
+    p.legend.click_policy = "hide"
+
     # Generate the script and div for the chart
     script, div = components(p)
 
     # Render the home.html template with the Bokeh chart
-    return render(request, 'myapp/home.html', {'form': form, 'script': script, 'div': div})
+    return render(request, 'myapp/home.html', {
+        'form': form,
+        'script': script,
+        'div': div
+    })
+
+
+
+
+def predict_future(model, scaler, data, time_steps, future_steps):
+    """
+    Predict future stock prices using the trained LSTM model.
+
+    Args:
+    - model: Trained LSTM model.
+    - scaler: MinMaxScaler used for scaling the data.
+    - data: Scaled historical data (numpy array).
+    - time_steps: Number of time steps used for prediction.
+    - future_steps: Number of future steps to predict.
+
+    Returns:
+    - future_predictions: Predicted future stock prices (unscaled).
+    """
+    recent_data = data[-time_steps:]  # Take the last `time_steps` data points
+    future_predictions = []
+
+    for _ in range(future_steps):
+        # Reshape recent data for prediction
+        input_data = recent_data.reshape(1, time_steps, 1)
+        predicted = model.predict(input_data)
+        future_predictions.append(predicted[0, -1, 0])  # Get the last time step prediction
+        
+        # Update recent_data with the new prediction
+        recent_data = np.append(recent_data, predicted[0, -1, 0])[-time_steps:]
+
+    # Inverse transform predictions to original scale
+    future_predictions = scaler.inverse_transform(np.array(future_predictions).reshape(-1, 1))
+    return future_predictions
+'''
 
 def my_view(request):
     context = {'message': 'Hello from Django!'}

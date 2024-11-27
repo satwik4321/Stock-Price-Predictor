@@ -132,13 +132,7 @@
                 <div class="card2">
                     <div class="card-body">
                         <select class="form-control select-time-frame" onchange="selectTimeFrame(this.value)">
-                            <option value="">Select Time Frame</option>
-                            <option value="1D">Daily</option>
-                            <option value="5D">Weekly</option>
-                            <option value="1M">Monthly</option>
-                            <option value="6M">Quarterly</option>
-                            <option value="YTD">Yearly</option>
-                            <option value="MAX">Max</option>
+                            {{ form.timeframes }}
                         </select>
                     </div>
                 </div>

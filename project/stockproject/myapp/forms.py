@@ -28,7 +28,8 @@ class StockForm(forms.Form):
     )
     choices = forms.ChoiceField(label='Select one of the stocks from the list:',choices=[('Select One','None Selected'),('AAPL', 'Apple'), ('GOOGL', 'Google'),('NVDA','NVIDIA'),('TSLA','Tesla'),('WBD','Warner Bros Discovery'),('AMZN','Amazon'),('INTC','Intel'),('NFLX','Netflix'),('META','Meta'),('F','Ford Motor')],required=True)
     search = forms.CharField(label='Enter the ticker symbol for the stock:', max_length=100,required=False)
-
+    timeframes = forms.ChoiceField(label='Select one of the stocks from the list:',choices=[('1 week') ],required=True)
+    
 import os
 from pathlib import Path
 def update_choices():

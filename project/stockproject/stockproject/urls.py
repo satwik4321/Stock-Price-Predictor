@@ -20,6 +20,6 @@ from django.urls import path
 from myapp import views
 
 urlpatterns = [
-    path('collect_history/', views.collect_history, name='collect_history'),
-    path('', views.home, name='home')
+    path('collect_history', views.collect_history, name='collect_history'),
+    #path('', views.home, name='home')
 ]

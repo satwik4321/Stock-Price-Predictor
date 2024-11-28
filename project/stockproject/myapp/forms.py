@@ -27,14 +27,6 @@ class StockForm(forms.Form):
         widget=forms.Select(attrs={'id': 'id_company_with_tickers', 'class': 'form-control'}),
         required=False
     )
-<<<<<<< HEAD
-    choices = forms.ChoiceField(label='Select one of the stocks from the list:',choices=[('Select One','None Selected'),('AAPL', 'Apple'), ('GOOGL', 'Google'),('NVDA','NVIDIA'),('TSLA','Tesla'),('WBD','Warner Bros Discovery'),('AMZN','Amazon'),('INTC','Intel'),('NFLX','Netflix'),('META','Meta'),('F','Ford Motor')],required=True)
-    search = forms.CharField(label='Enter the ticker symbol for the stock:', max_length=100,required=False)
-    timeframes = forms.ChoiceField(label='Select one of the stocks from the list:',choices=[('1 week') ],required=True)
-    
-import os
-from pathlib import Path
-=======
     choices = forms.ChoiceField(
         label='Select one of the stocks from the list:',
         choices=[('', 'Select the Company Name')] + [('AAPL', 'Apple'), ('GOOGL', 'Google'), ('NVDA', 'NVIDIA'), ('TSLA', 'Tesla'), ('WBD', 'Warner Bros Discovery'), ('AMZN', 'Amazon'), ('INTC', 'Intel'), ('NFLX', 'Netflix'), ('META', 'Meta'), ('F', 'Ford Motor')],
@@ -49,7 +41,6 @@ from pathlib import Path
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
 
->>>>>>> 103a0814b8276dbc8a5286f089196f10b90d2a35
 def update_choices():
     file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
     list_stocks = []

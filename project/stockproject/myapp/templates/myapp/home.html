@@ -132,7 +132,13 @@
                 <div class="card2">
                     <div class="card-body">
                         <select class="form-control select-time-frame" onchange="selectTimeFrame(this.value)">
-                            {{ form.timeframes }}
+                            <option value="">Select Time Frame</option>
+                            <option value="1D">Daily</option>
+                            <option value="5D">Weekly</option>
+                            <option value="1M">Monthly</option>
+                            <option value="6M">Quarterly</option>
+                            <option value="YTD">Yearly</option>
+                            <option value="MAX">Max</option>
                         </select>
                     </div>
                 </div>
@@ -143,7 +149,11 @@
                     <div class="card-body">
                         <h3>Bokeh Plot</h3>
                         <div>
-                            {{ div|safe }}
+                            {% if div %}
+                                {{ div|safe }}
+                            {% else %}
+                                <p>Plot failed to load. Please try again.</p>
+                            {% endif %}
                         </div>
                         {{ script|safe }}
                     </div>
@@ -154,32 +164,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-    <script>
-        /*messaconst message = "{{ message }}";  // Django template syntax
-        alert(message);  // Display the message in an alert box
-        $(document).ready(function() {
-            $('#id_company_with_tickers').select2({
-                placeholder: "Select a stock",
-                allowClear: true
-            });
-        });
-        const socket = new WebSocket("http://127.0.0.1:8000/")
 
-        socket.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-
-            // Update progress bar and text
-            progressBar.style.width = data.progress + "%";
-            progressBar.innerHTML = data.progress + "%";
-            epochDisplay.innerHTML = "Epoch: " + data.epoch;
-            lossDisplay.innerHTML = "Loss: " + data.loss.toFixed(4);
-        };
-
-        socket.onclose = function(event) {
-            console.log("WebSocket closed unexpectedly");
-        };*/
-    </script>
 </body>
 </html>
 

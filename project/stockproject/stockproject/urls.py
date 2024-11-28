@@ -21,12 +21,7 @@ from myapp import views
 #from myapp.views import handle_stock_submission
 
 urlpatterns = [
-<<<<<<< HEAD
-    path('collect_history', views.collect_history, name='collect_history'),
-    #path('', views.home, name='home')
-=======
     path('collect_history/', views.collect_history, name='collect_history'),
     #path('stock-form/', handle_stock_submission, name='stock_form'),
     path('', views.home, name='home')
->>>>>>> 103a0814b8276dbc8a5286f089196f10b90d2a35
 ]

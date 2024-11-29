@@ -72,6 +72,16 @@
             padding: 0.05rem;
             margin-bottom: 3rem;
         }
+        .card3 {
+            background-color: rgb(95, 167, 209);
+            border-radius: 0.25rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            padding: 0.5rem;
+            margin-top: -1cm;
+            margin-bottom: 0.05rem;
+            width: 330%; /* Ensures that the card takes the full width of its container */
+            height: 80%;
+        }
         .vertical-line {
             position:absolute;
             left: 45%;
@@ -79,11 +89,16 @@
             bottom: 0;
             border-left: 2px solid #000;
             margin-top: -15px;
-            margin-bottom: -230px;
+            margin-bottom: 15px;
         }
         .select-placeholder option:first-child {
             color: grey; /* Change the color to grey or another light color */
             display: none; /* Hide from the dropdown */
+        }
+        .bokeh-plot-container {
+            width: 100%; /* This will make the Bokeh plot fill the card3 */
+            height: 400px; /* Adjust this value based on your desired plot height */
+            overflow: hidden;  /* Optional, to handle overflow if the plot is larger than the container */
         }
     </style>
     <!-- Load BokehJS -->
@@ -94,8 +109,8 @@
     <div class="progress-bar">
         <div id="progress" class="progress">0%</div>
     </div>
-    <p id="epoch">Epoch: 0</p>
-    <p id="loss">Loss: N/A</p>
+    <!--<p id="epoch">Epoch: 0</p>
+    <p id="loss">Loss: N/A</p>-->
     <div class="container-fluid mt-4">
         <div class="row">
             <div class="col-md-12 text-center">
@@ -146,13 +161,11 @@
                         </select>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-8">
                 <!-- Bokeh Plot -->
-                <div class="card">
+                <div class="card3">
                     <div class="card-body">
                         <h3>Bokeh Plot</h3>
-                        <div>
+                        <div class="bokeh-plot-container">
                             {{ div|safe }}
                         </div>
                         {{ script|safe }}

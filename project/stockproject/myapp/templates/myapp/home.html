@@ -72,6 +72,13 @@
             padding: 0.05rem;
             margin-bottom: 3rem;
         }
+        .card3 {
+            background-color: rgb(21, 140, 180);
+            border-radius: 0.25rem;
+            box-shadow: 0 0.125rem 0rem rgba(0,0,0,0.75);
+            padding: 0.05rem;
+            margin-bottom: 3rem;
+        }
         .vertical-line {
             position:absolute;
             left: 45%;
@@ -79,7 +86,7 @@
             bottom: 0;
             border-left: 2px solid #000;
             margin-top: -15px;
-            margin-bottom: -230px;
+            margin-bottom: -200px;
         }
     </style>
     <!-- Load BokehJS -->
@@ -142,11 +149,9 @@
                         </select>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-8">
+            
                 <!-- Bokeh Plot -->
-                <div class="card">
-                    <div class="card-body">
+                <div class="card3">
                         <h3>Bokeh Plot</h3>
                         <div>
                             {% if div %}
@@ -156,7 +161,6 @@
                             {% endif %}
                         </div>
                         {{ script|safe }}
-                    </div>
                 </div>
             </div>
         </div>

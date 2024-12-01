@@ -40,7 +40,20 @@ class StockForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
-
+    choices1 = forms.ChoiceField(
+        label='Select future or past data:',
+        choices=[('','None'),(0,'Past'),(1,'Future')],
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        initial=''
+    )
+    choices2 = forms.ChoiceField(
+        label='Select future or past data:',
+        choices=[('1D','Daily'),('5D','Weekly'),('1M','Monthly'),('6M','Quarterly'),('YTD','Yearly'),('MAX','Max')],
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        initial=''
+    )
 def update_choices():
     file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
     list_stocks = []

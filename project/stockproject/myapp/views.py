@@ -333,7 +333,6 @@ def home(request,call=None,name=None):
     if name==None:
         name="AAPL"
     form = StockForm()
-
     interval = "1m"  # 1-minute interval
     start_date = "2024-01-24"
     end_date = "2024-10-25"

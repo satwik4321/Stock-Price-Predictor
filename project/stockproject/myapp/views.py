@@ -29,6 +29,10 @@ import yfinance as yf
 from sklearn.preprocessing import MinMaxScaler
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+import os
+
+base_path = os.getenv("PROJECT_ROOT", ".")
+data_path = os.path.join(base_path, "data", "input.txt")
 
 def create_lstm_data_train(data, time_steps):
  x, y = [], []
@@ -81,25 +85,21 @@ def train_model(name,data,input,scaler,size):
             }
         )'''
     x,y=create_lstm_data_train(data,size)
-    file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\models')
+    #file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\models')
+    data_path=os.path.join(base_path,"models")
     name_f=str(name+'.h5')
-    full_path=os.path.join(file_path,name_f)
+    full_path=os.path.join(data_path,name_f)
     if input==0:
-        file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\models')
+        #file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\models')
         name_f=str(name+'.h5')
-        full_path=os.path.join(file_path,name_f)
+        data_path=os.path.join(base_path,"models")
+        full_path=os.path.join(data_path,name_f)
         full_path=Path(full_path)
         early_stopping = EarlyStopping(
         monitor='val_loss',       # Metric to monitor (e.g., validation loss)
         patience=10,              # Number of epochs with no improvement before stopping
         restore_best_weights=True # Restore the best weights at the end of training
         )
-
-        '''model_checkpoint = ModelCheckpoint(
-        filepath=full_path,       # Path to save the best model
-        monitor='val_loss',       # Metric to monitor
-        save_best_only=True,      # Save only when the metric improves
-        verbose=1)                 # Print a message when the model is saved'''
 
         if full_path.is_file():
             model = keras.models.load_model(full_path)    
@@ -121,9 +121,10 @@ def train_model(name,data,input,scaler,size):
             request.method = 'GET'
             #my_view(request)
             model.fit(x, y, batch_size=128, epochs=50,callbacks=[early_stopping])
-            file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\models')
+            data_path = os.path.join(base_path, "models")
+            #file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\models')
             name_f=str(name+'.h5')
-            full_path=os.path.join(file_path,name_f)
+            full_path=os.path.join(data_path,name_f)
             print(full_path)
             model.save(full_path)
     else:
@@ -144,108 +145,110 @@ def train_model(name,data,input,scaler,size):
     request.method = 'GET'
     # Initialize the form
     form = StockForm()
+    choice=0
+    if choice==0:
+        script,div=home(request,0,name)
+    else:
+        future_prices=pd.DataFrame(y_pred)
+        print(future_prices)
+        interval = "1m"  # 1-minute interval
 
-    interval = "1m"  # 1-minute interval
-    start_date = "2024-01-24"
-    end_date = "2024-10-25"
+        next_days = get_next_n_days(len(y_pred)) #Get the next n dates
+        y_pred=y_pred.reshape(-1)
+        print(y_pred)
+        stock_data=pd.DataFrame({"Date":next_days,"Open":y_pred})
+        # Reset index and flatten MultiIndex columns
+        stock_data.reset_index(inplace=True)
+        stock_data.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in stock_data.columns]
 
-    # Fetch stock data using yfinance
-    stock_data = yf.download(
-        str(name),
-        start=start_date,
-        end=end_date,
-        progress=False
-    )
-    print(stock_data)
-    # Reset index and flatten MultiIndex columns
-    stock_data.reset_index(inplace=True)
-    stock_data.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in stock_data.columns]
+        # Ensure the Date column exists and is timezone-free
+        if 'Date' in stock_data.columns:
+            stock_data['Date'] = pd.to_datetime(stock_data['Date']).dt.tz_localize(None)
+        else:
+            raise ValueError("Date column is missing in the fetched stock data.")
 
-    # Dynamically rename Datetime/Date column
-    '''if 'Datetime_' in stock_data.columns:
-        stock_data.rename(columns={'Datetime_': 'Date'}, inplace=True)
-    elif 'Date_' in stock_data.columns:
-        stock_data.rename(columns={'Date_': 'Date'}, inplace=True)'''
+        # Rename remaining columns for standardization
+        '''stock_data.rename(columns={
+            'Open_AAPL': 'Open',
+            'High_AAPL': 'High',
+            'Low_AAPL': 'Low',
+            'Close_AAPL': 'Close',
+            'Adj Close_AAPL': 'Adj_Close',
+            'Volume_AAPL': 'Volume',
+        }, inplace=True)'''
 
-    # Ensure the Date column exists and is timezone-free
-    if 'Date' in stock_data.columns:
-        stock_data['Date'] = pd.to_datetime(stock_data['Date']).dt.tz_localize(None)
-    '''else:
-        raise ValueError("Date column is missing in the fetched stock data.")'''
+        # Dynamically calculate candlestick width based on interval
+        interval_mapping = {
+            "1m": 60 * 1000,        # 1 minute in milliseconds
+            "5m": 5 * 60 * 1000,    # 5 minutes in milliseconds
+            "15m": 15 * 60 * 1000,  # 15 minutes in milliseconds
+            "30m": 30 * 60 * 1000,  # 30 minutes in milliseconds
+            "1h": 60 * 60 * 1000,   # 1 hour in milliseconds
+            "1d": 24 * 60 * 60 * 1000,  # 1 day in milliseconds
+        }
+        width = interval_mapping.get(interval, 12 * 60 * 60 * 1000)  # Default to 12 hours if interval is unknown
+        stock_data["Previous_Open"] = stock_data["Open"].shift(1)  # Shift "Open" by 1
+        stock_data["Greater_Than_Previous"] = stock_data["Open"] > stock_data["Previous_Open"]
 
-    # Rename remaining columns for standardization
-    stock_data.rename(columns={
-        'Open_AAPL': 'Open',
-        'High_AAPL': 'High',
-        'Low_AAPL': 'Low',
-        'Close_AAPL': 'Close',
-        'Adj Close_AAPL': 'Adj_Close',
-        'Volume_AAPL': 'Volume',
-    }, inplace=True)
+        # Get indices where condition is True
+        inc = stock_data[stock_data["Greater_Than_Previous"]].index.tolist()
 
-    # Dynamically calculate candlestick width based on interval
-    interval_mapping = {
-        "1m": 60 * 1000,        # 1 minute in milliseconds
-        "5m": 5 * 60 * 1000,    # 5 minutes in milliseconds
-        "15m": 15 * 60 * 1000,  # 15 minutes in milliseconds
-        "30m": 30 * 60 * 1000,  # 30 minutes in milliseconds
-        "1h": 60 * 60 * 1000,   # 1 hour in milliseconds
-        "1d": 24 * 60 * 60 * 1000,  # 1 day in milliseconds
-    }
-    width = interval_mapping.get(interval, 12 * 60 * 60 * 1000)  # Default to 12 hours if interval is unknown
+        stock_data["Previous_Open"] = stock_data["Open"].shift(1)  # Shift "Open" by 1
+        stock_data["Greater_Than_Previous"] = stock_data["Open"] < stock_data["Previous_Open"]
+        dec = stock_data[stock_data["Greater_Than_Previous"]].index.tolist()
+        print("indices:",dec)
+        # Create a candlestick chart
+        '''inc = stock_data['Open'] > stock_data['Open']
+        dec = stock_data['Open'] > stock_data['Close']'''
+        stock_data["Previous_Open"] = stock_data["Open"].shift(1)
+        source_inc = ColumnDataSource(data=stock_data.iloc[inc])
+        source_dec = ColumnDataSource(data=stock_data.iloc[dec])
 
-    # Create a candlestick chart
-    inc = stock_data['Close'] > stock_data['Open']
-    dec = stock_data['Open'] > stock_data['Close']
+        p = figure(
+            x_axis_type="datetime",
+            height=600,
+            width=1000,
+            title="Candlestick Chart",
+            sizing_mode="stretch_width"
+        )
+        p.grid.grid_line_alpha = 0.3
 
-    source_inc = ColumnDataSource(data=stock_data[inc])
-    source_dec = ColumnDataSource(data=stock_data[dec])
+        # Plot increasing candles (green)
+        p.segment(x0='Date', y0='Previous_Open', x1='Date', y1='Open', color="green", source=source_inc)
+        #p.vbar(x='Date', width=width, top='Open', bottom='Close', fill_color="#D5E1DD", line_color="black", source=source_inc)
+        # Plot decreasing candles (red)
+        p.segment(x0='Date', y0='Previous_Open', x1='Date', y1='Open', color="red", source=source_dec)
+        #p.vbar(x='Date', width=width, top='Open', bottom='Close', fill_color="#F2583E", line_color="black", source=source_dec)
 
-    p = figure(
-        x_axis_type="datetime",
-        height=600,
-        width=1000,
-        title="Candlestick Chart",
-        sizing_mode="stretch_width"
-    )
-    p.grid.grid_line_alpha = 0.3
+        # Add hover tool for interactivity
+        hover = HoverTool(
+            tooltips=[
+                ("Datetime", "@Datetime{%F %T}"),
+                ("Open", "@Open{0.2f}"),
+                ("High", "@High{0.2f}"),
+                ("Low", "@Low{0.2f}"),
+                ("Close", "@Close{0.2f}"),
+            ],
+            formatters={
+                '@Datetime': 'datetime',
+            },
+            mode='vline'
+        )
+        p.add_tools(hover)
 
-    # Plot increasing candles (green)
-    p.segment(x0='Date', y0='Low', x1='Date', y1='High', color="black", source=source_inc)
-    #p.vbar(x='Date', width=width, top='Open', bottom='Close', fill_color="#D5E1DD", line_color="black", source=source_inc)
+        # Generate the script and div for the chart
+        script, div = components(p)
 
-    # Plot decreasing candles (red)
-    p.segment(x0='Date', y0='Low', x1='Date', y1='High', color="black", source=source_dec)
-    #p.vbar(x='Date', width=width, top='Open', bottom='Close', fill_color="#F2583E", line_color="black", source=source_dec)
-
-    # Add hover tool for interactivity
-    hover = HoverTool(
-        tooltips=[
-            ("Datetime", "@Datetime{%F %T}"),
-            ("Open", "@Open{0.2f}"),
-            ("High", "@High{0.2f}"),
-            ("Low", "@Low{0.2f}"),
-            ("Close", "@Close{0.2f}"),
-        ],
-        formatters={
-            '@Datetime': 'datetime',
-        },
-        mode='vline'
-    )
-    p.add_tools(hover)
-
-    # Generate the script and div for the chart
-    script, div = components(p)
-
-    # Render the home.html template with the Bokeh chart
+        # Render the home.html template with the Bokeh chart
     return script,div
-    MAE=0
+    #Don't delete the code below
+    '''MAE=0
     
     for i in range(len(y_pred)):
         MAE+=abs(y_pred[i]-y_actual[i])
     
     MAE/=len(y_pred)
-    print("Mean absolute error:",MAE)
+    print("Mean absolute error:",MAE)'''
 
 def collect_history(request):
     if request.method == 'POST':
@@ -315,9 +318,20 @@ import yfinance as yf
 import pandas as pd
 from datetime import datetime
 
+from datetime import date, timedelta
 
-def home(request):
+# Function to get the next n dates
+def get_next_n_days(n):
+    today = date.today()
+    return [(today + timedelta(days=i)) for i in range(n)]
+
+
+
+
+def home(request,call=None,name=None):
     # Initialize the form
+    if name==None:
+        name="AAPL"
     form = StockForm()
 
     interval = "1m"  # 1-minute interval
@@ -326,7 +340,7 @@ def home(request):
 
     # Fetch stock data using yfinance
     stock_data = yf.download(
-        "AAPL",
+        name,
         start=start_date,
         end=end_date,
         progress=False
@@ -336,17 +350,11 @@ def home(request):
     stock_data.reset_index(inplace=True)
     stock_data.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in stock_data.columns]
 
-    # Dynamically rename Datetime/Date column
-    '''if 'Datetime_' in stock_data.columns:
-        stock_data.rename(columns={'Datetime_': 'Date'}, inplace=True)
-    elif 'Date_' in stock_data.columns:
-        stock_data.rename(columns={'Date_': 'Date'}, inplace=True)'''
-
     # Ensure the Date column exists and is timezone-free
     if 'Date' in stock_data.columns:
         stock_data['Date'] = pd.to_datetime(stock_data['Date']).dt.tz_localize(None)
-    '''else:
-        raise ValueError("Date column is missing in the fetched stock data.")'''
+    else:
+        raise ValueError("Date column is missing in the fetched stock data.")
 
     # Rename remaining columns for standardization
     stock_data.rename(columns={
@@ -386,11 +394,11 @@ def home(request):
     p.grid.grid_line_alpha = 0.3
 
     # Plot increasing candles (green)
-    p.segment(x0='Date', y0='Low', x1='Date', y1='High', color="black", source=source_inc)
+    p.segment(x0='Date', y0='Low', x1='Date', y1='High', color="green", source=source_inc)
     #p.vbar(x='Date', width=width, top='Open', bottom='Close', fill_color="#D5E1DD", line_color="black", source=source_inc)
 
     # Plot decreasing candles (red)
-    p.segment(x0='Date', y0='Low', x1='Date', y1='High', color="black", source=source_dec)
+    p.segment(x0='Date', y0='Low', x1='Date', y1='High', color="red", source=source_dec)
     #p.vbar(x='Date', width=width, top='Open', bottom='Close', fill_color="#F2583E", line_color="black", source=source_dec)
 
     # Add hover tool for interactivity
@@ -408,14 +416,9 @@ def home(request):
         mode='vline'
     )
     p.add_tools(hover)
-
     # Generate the script and div for the chart
     script, div = components(p)
-
+    if call==0:
+        return script, div
     # Render the home.html template with the Bokeh chart
     return render(request, 'myapp/home.html', {'form': form, 'script': script, 'div': div})
-
-'''def my_view(request):
-    context = {'message': 'Hello from Django!'}
-    return render(request, 'templates\myapp\home.html', context)
-'''

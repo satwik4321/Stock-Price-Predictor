@@ -82,6 +82,13 @@
             width: 330%; /* Ensures that the card takes the full width of its container */
             height: 80%;
         }
+        .card4 {
+            background-color: rgb(95, 167, 209);
+            border-radius: 0.25rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            padding: 0.05rem;
+            margin-bottom: 3rem;
+        }
         .vertical-line {
             position:absolute;
             left: 45%;
@@ -165,7 +172,7 @@
             
                 <!-- Bokeh Plot -->
                 <div class="card3">
-                        <h3>Bokeh Plot</h3>
+                    <h3>{{ plot_title|default:"Apple Inc., AAPL" }}</h3>
                         <div>
                             {% if div %}
                                 {{ div|safe }}
@@ -174,6 +181,17 @@
                             {% endif %}
                         </div>
                         {{ script|safe }}
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card4">
+                    <div class="card-body">
+                        <select class="form-control select-data" id="data-type-select">
+                            <option>Select Data</option>
+                            <option value="0">Historical Data</option>
+                            <option value="1">Prediction Data</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -222,6 +240,26 @@
                 if (!enforceSingleInput()) {
                     event.preventDefault(); // Prevent form submission if validation fails
                 }
+            });
+            $('#data-type-select').change(function() {
+                var choice = $(this).val();  // Get the selected option value
+
+                $.ajax({
+                    url: "{% url 'data_selection' %}",  // Django URL to handle the request
+                    type: "POST",
+                    data: {
+                        'choice': choice,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        // Handle success (Optional)
+                        console.log('Data type selection changed successfully.');
+                    },
+                    error: function(xhr, errmsg, err) {
+                        // Handle error
+                        console.log('Error changing data type: ' + errmsg);
+                    }
+                });
             });
         });
 

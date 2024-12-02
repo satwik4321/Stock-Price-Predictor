@@ -23,5 +23,6 @@ from myapp import views
 urlpatterns = [
     path('collect_history/', views.collect_history, name='collect_history'),
     #path('stock-form/', handle_stock_submission, name='stock_form'),
+    path('data_selection/', views.data_selection, name='data_selection'),
     path('', views.home, name='home')
 ]

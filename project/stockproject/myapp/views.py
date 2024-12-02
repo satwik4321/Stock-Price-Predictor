@@ -145,7 +145,7 @@ def train_model(name,data,input,scaler,size):
     request.method = 'GET'
     # Initialize the form
     form = StockForm()
-    choice=0
+    choice=1
     if choice==0:
         script,div=home(request,0,name)
     else:
@@ -256,17 +256,33 @@ def collect_history(request):
         print(request.POST)
         input=0
         if form.is_valid():
-            if form.cleaned_data['search']!="":
-                Name=form.cleaned_data['search']
+            choice = request.session.get('data_choice', 0)  # Default to 0
+            # Initialize variables to ensure they are available in all code paths
+            ticker_input = form.cleaned_data.get('search', '')
+            company_info = form.cleaned_data.get('company_with_tickers', '')
+            print("Company Info:", company_info)  # Should output 'Company Name, Ticker'
+
+            if ',' in company_info:
+                company_name, ticker = company_info.split(', ')
+                company_name = company_name.strip()  # Clean up any leading/trailing whitespace
+                ticker = ticker.strip()  # Clean up any leading/trailing whitespace
             else:
-                if form.cleaned_data['choices']!="Select One":
-                    Name=form.cleaned_data['choices']
-                    input=1
-                    
-            stock=yf.Ticker(Name)
-            print(stock)
+                company_name = "Unknown Company"
+                ticker = company_info.strip() or "Unknown Ticker"
+
+            # Log the selected company and ticker for debugging
+            print(f"Selected company: {company_name}, ticker: {ticker}")
+
+            # Proceed with other logic depending on the choice
+            if choice == '0':  # Historical Data
+                # Historical data processing logic here
+            elif choice == '1':  # Prediction Data
+                # Prediction data processing logic here
+                
+            stock=yf.Ticker(ticker)
+            print("YFinance Ticker object:", stock)
             start_date = "2017-01-03"
-            csv_filename= f"{Name}_stock_data.csv"
+            csv_filename= f"{ticker}_stock_data.csv"
             csv_filepath = os.path.join(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\myapp\data', csv_filename)
             print("------------------",stock.info.get("symbol"))
             data_stock = yf.download(stock.info.get("symbol"), start=start_date)
@@ -274,17 +290,28 @@ def collect_history(request):
             date=str(data_stock.index[0])
             if start_date[:10]!=date[:10]:
                 timeframe=60
-            save_stock_data(Name, data_stock)
+            save_stock_data(ticker, data_stock)
+        
+            data_close=data_stock['Close'].values.reshape(-1,1)
+            scaler = MinMaxScaler(feature_range=(0, 1))
+            close_prices_scaled = scaler.fit_transform(data_close)
+            script, div=train_model(ticker,close_prices_scaled,input,scaler,timeframe)
+            # Return a JSON response
+            # Prepare the plot title
+            plot_title = f"{company_name} ({ticker}) Stock Price Graph"
+            return render(request, 'myapp/home.html', {'form': form, 'script': script, 'div': div, 'plot_title': plot_title, 'data': data_stock.to_dict()})
         else:
-            print(form.errors)
-        data_close=data_stock['Close'].values.reshape(-1,1)
-        scaler = MinMaxScaler(feature_range=(0, 1))
-        close_prices_scaled = scaler.fit_transform(data_close)
-        script, div=train_model(Name,close_prices_scaled,input,scaler,timeframe)
-        # Return a JSON response
-        return render(request, 'myapp/home.html', {'form': form, 'script': script, 'div': div, 'data': data_stock.to_dict()})
+            print("Form errors:", form.errors)
     return JsonResponse({"error": "Invalid request"}, status=400)
 
+def data_selection(request):
+    if request.method == 'POST':
+        choice = request.POST.get('choice')
+        # Process the choice
+        # You can save it to the session or update the database
+        request.session['data_choice'] = choice  # Example: Saving to session
+        return JsonResponse({'status': 'success', 'message': 'Choice updated successfully.'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
 #Store the data collected from the Collect_History function to be saved to a csv file
 
@@ -297,7 +324,7 @@ def save_stock_data(stock_name, stock_data):
             if data_stock.empty:
                     return JsonResponse({"error": "No data found for stock symbol"}, status = 4040)
             
-            project_root = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(os.path.abspath(_file_))
             stock_data_folder = os.path.join(project_root, 'stockproject')
             
             csv_filename= f"{stock_name}_stock_data.csv"

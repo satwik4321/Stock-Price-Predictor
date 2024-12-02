@@ -4,7 +4,7 @@ from django.conf import settings
 from pathlib import Path
 
 def load_ticker_choices():
-    choices = [('','Select the Company Name')]  # Placeholder text
+    choices = [('','Select the Company Name')]
     file_path = os.path.join(settings.BASE_DIR, 'myapp/data/stocks.csv')
     try:
         with open(file_path, 'r') as file:
@@ -12,13 +12,12 @@ def load_ticker_choices():
             for line in file:
                 parts = line.strip().split(',')
                 if len(parts) >= 2:
-                    symbol, name = parts[0], parts[1]
-                    choices.append((symbol, f"{name}, {symbol}"))
-    except FileNotFoundError:
-        print(f"File not found: {file_path}")
+                    symbol, name = parts[0].strip(), parts[1].strip()
+                    choices.append((f"{name}, {symbol}", f"{name}, {symbol}"))
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred reading the stock choices: {e}")
     return choices
+
 
 class StockForm(forms.Form):
     company_with_tickers = forms.ChoiceField(

@@ -13,9 +13,10 @@ def load_ticker_choices():
                 parts = line.strip().split(',')
                 if len(parts) >= 2:
                     symbol, name = parts[0].strip(), parts[1].strip()
-                    choices.append((f"{name}, {symbol}", f"{name}, {symbol}"))
+                    choices.append((f"{symbol}, {name}", f"{symbol}, {name}"))
     except Exception as e:
-        print(f"An error occurred reading the stock choices: {e}")
+        print(f"An error occurred: {e}")
+    #print("Choices loaded:", choices) 
     return choices
 
 
@@ -40,8 +41,8 @@ class StockForm(forms.Form):
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     choices1 = forms.ChoiceField(
-        label='Select future or past data:',
-        choices=[('','None'),(0,'Past'),(1,'Future')],
+        label='Select Historical or Prediction data:',
+        choices=[('','None'),(0,'Historical Data'),(1,'Prediction Data')],
         required=False,
         widget=forms.Select(attrs={'class': 'form-control'}),
         initial=''

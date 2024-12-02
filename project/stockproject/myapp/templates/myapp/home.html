@@ -151,20 +151,16 @@
                     </div>
                 </div>
             </div>
+
             <div class="col-md-1">
                 <div class="vertical-line"></div>
             </div>
+
             <div class="col-md-2">
                 <!-- Time Frame Selection -->
                 <div class="card2">
                     <div class="card-body">
-                        {{ form.choices1 }}
-                        </select>
-                    </div>
-                </div>
-                <div class="card2">
-                    <div class="card-body">
-                        {{form.choices2}}  
+                        {{form.choices1}}  
                         </select>
                     </div>
                 </div>
@@ -182,13 +178,11 @@
                         {{ script|safe }}
                 </div>
             </div>
+            
             <div class="col-md-3">
                 <div class="card4">
                     <div class="card-body">
-                        <select class="form-control select-data" id="data-type-select">
-                            <option>Select Data</option>
-                            <option value="0">Historical Data</option>
-                            <option value="1">Prediction Data</option>
+                        {{ form.choices2 }}
                         </select>
                     </div>
                 </div>
@@ -239,26 +233,6 @@
                 if (!enforceSingleInput()) {
                     event.preventDefault(); // Prevent form submission if validation fails
                 }
-            });
-            $('#data-type-select').change(function() {
-                var choice = $(this).val();  // Get the selected option value
-
-                $.ajax({
-                    url: "{% url 'data_selection' %}",  // Django URL to handle the request
-                    type: "POST",
-                    data: {
-                        'choice': choice,
-                        'csrfmiddlewaretoken': '{{ csrf_token }}'
-                    },
-                    success: function(response) {
-                        // Handle success (Optional)
-                        console.log('Data type selection changed successfully.');
-                    },
-                    error: function(xhr, errmsg, err) {
-                        // Handle error
-                        console.log('Error changing data type: ' + errmsg);
-                    }
-                });
             });
         });
 

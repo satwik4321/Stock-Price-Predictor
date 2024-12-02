@@ -259,7 +259,10 @@ def collect_history(request):
             choice = request.session.get('data_choice', 0)  # Default to 0
             # Initialize variables to ensure they are available in all code paths
             ticker_input = form.cleaned_data.get('search', '')
-            company_info = form.cleaned_data.get('company_with_tickers', '')
+            company_info = form.cleaned_data.get('choices')
+            if company_info==None:
+                company_info=form.cleaned_data.get('search')
+                             
             print("Company Info:", company_info)  # Should output 'Company Name, Ticker'
 
             if ',' in company_info:
@@ -272,20 +275,14 @@ def collect_history(request):
 
             # Log the selected company and ticker for debugging
             print(f"Selected company: {company_name}, ticker: {ticker}")
-
-            # Proceed with other logic depending on the choice
-            if choice == '0':  # Historical Data
-                # Historical data processing logic here
-            elif choice == '1':  # Prediction Data
-                # Prediction data processing logic here
                 
             stock=yf.Ticker(ticker)
             print("YFinance Ticker object:", stock)
             start_date = "2017-01-03"
             csv_filename= f"{ticker}_stock_data.csv"
             csv_filepath = os.path.join(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\myapp\data', csv_filename)
-            print("------------------",stock.info.get("symbol"))
-            data_stock = yf.download(stock.info.get("symbol"), start=start_date)
+            print("------------------",stock.info.get(stock))
+            data_stock = yf.download(stock.info.get(stock), start=start_date)
             timeframe=365
             date=str(data_stock.index[0])
             if start_date[:10]!=date[:10]:

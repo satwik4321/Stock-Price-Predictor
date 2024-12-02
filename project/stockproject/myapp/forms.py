@@ -33,11 +33,29 @@ class StockForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'}),
         initial=''
     )
-    search = forms.CharField(
+    '''search = forms.CharField(
         label='Enter the ticker symbol for the stock:',
         max_length=100,
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control'})
+    )'''
+    choices = forms.ChoiceField(
+        label='Select one of the stocks from the list:',
+        choices=[
+            ('', 'Select the Company Name'),  # Placeholder option
+            ('AAPL', 'Apple'),
+            ('GOOGL', 'Google'),
+            ('NVDA', 'NVIDIA'),
+            ('TSLA', 'Tesla'),
+            ('WBD', 'Warner Bros Discovery'),
+            ('AMZN', 'Amazon'),
+            ('INTC', 'Intel'),
+            ('NFLX', 'Netflix'),
+            ('META', 'Meta'),
+            ('F', 'Ford Motor')
+        ],
+        required=False,  # Optional field
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     choices1 = forms.ChoiceField(
         label='Select future or past data:',

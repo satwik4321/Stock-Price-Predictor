@@ -254,15 +254,13 @@ def collect_history(request):
     if request.method == 'POST':
         form=StockForm(request.POST)
         print(request.POST)
-        input=0
+        #input=0
         if form.is_valid():
             choice = request.session.get('data_choice', 0)  # Default to 0
             # Initialize variables to ensure they are available in all code paths
             ticker_input = form.cleaned_data.get('search', '')
-            company_info = form.cleaned_data.get('choices')
-            if company_info==None:
-                company_info=form.cleaned_data.get('search')
-                             
+            company_info = form.cleaned_data.get('company_with_tickers', '')
+            #input = 0
             print("Company Info:", company_info)  # Should output 'Company Name, Ticker'
 
             if ',' in company_info:
@@ -275,6 +273,12 @@ def collect_history(request):
 
             # Log the selected company and ticker for debugging
             print(f"Selected company: {company_name}, ticker: {ticker}")
+
+            # Proceed with other logic depending on the choice
+            #if choice == '0':  # Historical Data
+                # Historical data processing logic here
+            #elif choice == '1':  # Prediction Data
+                # Prediction data processing logic here
                 
             stock=yf.Ticker(ticker)
             print("YFinance Ticker object:", stock)
@@ -301,14 +305,6 @@ def collect_history(request):
             print("Form errors:", form.errors)
     return JsonResponse({"error": "Invalid request"}, status=400)
 
-def data_selection(request):
-    if request.method == 'POST':
-        choice = request.POST.get('choice')
-        # Process the choice
-        # You can save it to the session or update the database
-        request.session['data_choice'] = choice  # Example: Saving to session
-        return JsonResponse({'status': 'success', 'message': 'Choice updated successfully.'})
-    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
 #Store the data collected from the Collect_History function to be saved to a csv file
 
@@ -357,6 +353,7 @@ def home(request,call=None,name=None):
     if name==None:
         name="AAPL"
     form = StockForm()
+
     interval = "1m"  # 1-minute interval
     start_date = "2024-01-24"
     end_date = "2024-10-25"

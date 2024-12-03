@@ -228,12 +228,7 @@
                 return true;
             }
 
-            // Attach event handlers
-            $('#id_search').on('input', function() {
-                validateCompanyDetails();
-            });
-
-            $('form').submit(function(event) {
+            $('form').on('submit', function(event) {
                 if (!validateCompanyDetails()) {
                     event.preventDefault(); // Prevent form submission if validation fails
                 }

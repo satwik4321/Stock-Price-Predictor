@@ -126,12 +126,13 @@
             </div>
         </div>
         <hr>
+        <form method="post" action="{% url 'collect_history' %}">
         <div class="row">
             <div class="col-md-5">
                 <!-- Form Area -->
                 <div class="card">
                     <div class="card-body">
-                        <form method="post" action="{% url 'collect_history' %}">
+                        
                             {% csrf_token %}
                             <div class="form-group">
                                 <label for="stocks">Please choose a stock from the list of stocks or enter a ticker symbol for the stock you are looking for searching the ticker symbols in the first list</label>
@@ -142,12 +143,9 @@
                                 <label for="choices">Select one of the stocks from the list:</label>
                                 {{ form.choices }}
                             </div>
-                            <div class="form-group">
-                                <label for="search">Enter the ticker symbol for the stock "Eg. 'Apple', 'AAPL' ":</label>
-                                {{ form.search }}
-                            </div>
+                            
                             <button type="submit" class="btn btn-primary">Submit</button>
-                        </form>
+                        
                     </div>
                 </div>
             </div>
@@ -160,8 +158,9 @@
                 <!-- Time Frame Selection -->
                 <div class="card2">
                     <div class="card-body">
-                        {{form.choices1}}  
-                        </select>
+                        <div class="form-group">
+                                {{ form.choices1 }}  
+                    </div>
                     </div>
                 </div>
 
@@ -188,7 +187,9 @@
                 </div>
             </div>
         </div>
+    </form>
     </div>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -207,7 +208,6 @@
             function validateCompanyDetails() {
                 var initialSelection = $('#id_company_with_tickers').val();
                 var enteredTicker = $('#id_search').val().trim().toUpperCase(); // Trim and convert to uppercase
-
                 // Debug output to check what is being captured
                 console.log("Initial Selection:", initialSelection);
                 console.log("Entered Ticker:", enteredTicker);
@@ -238,7 +238,8 @@
             function enforceSingleInput() {
                 var tickerSymbol = $('#id_search').val(); // Input for ticker symbol has an ID of 'id_search'
                 var companyName = $('#id_choices').val(); // Second dropdown has an ID of 'id_choices'
-
+                var list =$('#id_company_with_tickers').val()
+                
                 // If both inputs are filled, clear the last one modified by the user
                 if (tickerSymbol && companyName) {
                     alert("Please select either one (Company Name or Ticker Symbol), not both.");

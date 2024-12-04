@@ -33,7 +33,7 @@ import os
 
 base_path = os.getenv("PROJECT_ROOT", ".")
 data_path = os.path.join(base_path, "data", "input.txt")
-
+base_path1=base_path
 def create_lstm_data_train(data, time_steps):
  x, y = [], []
  training_len=int(np.ceil(len(data)*0.50))
@@ -86,13 +86,13 @@ def train_model(name,data,input,scaler,size):
         )'''
     x,y=create_lstm_data_train(data,size)
     #file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\models')
-    data_path=os.path.join(base_path,"models")
+    #data_path=os.path.join(base_path,"models")
     name_f=str(name+'.h5')
     full_path=os.path.join(data_path,name_f)
     if input==0:
         #file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\models')
         name_f=str(name+'.h5')
-        data_path=os.path.join(base_path,"models")
+        #data_path=os.path.join(base_path,"models")
         full_path=os.path.join(data_path,name_f)
         full_path=Path(full_path)
         early_stopping = EarlyStopping(
@@ -121,13 +121,15 @@ def train_model(name,data,input,scaler,size):
             request.method = 'GET'
             #my_view(request)
             model.fit(x, y, batch_size=128, epochs=50,callbacks=[early_stopping])
-            data_path = os.path.join(base_path, "models")
+            #data_path = os.path.join(base_path, "models")
             #file_path = Path(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\models')
             name_f=str(name+'.h5')
-            full_path=os.path.join(data_path,name_f)
+            full_path=os.path.join(base_path,'models',name_f)
             print(full_path)
             model.save(full_path)
     else:
+        name_f=str(name+'.h5')
+        full_path=os.path.join(base_path1,"models",name_f)
         model = keras.models.load_model(full_path)
 
     x,y=create_lstm_data_test(data,size)
@@ -258,11 +260,13 @@ def collect_history(request):
         if form.is_valid():
             choice = request.session.get('data_choice', 0)  # Default to 0
             # Initialize variables to ensure they are available in all code paths
-            ticker_input = form.cleaned_data.get('search', '')
-            company_info = form.cleaned_data.get('company_with_tickers', '')
+            ticker_input = form.cleaned_data.get('search')
+            company_info = form.cleaned_data.get('id_company_with_tickers')
             #input = 0
             print("Company Info:", company_info)  # Should output 'Company Name, Ticker'
-
+            if company_info==None:
+                company_info=form.cleaned_data.get('search')
+            print("Company Info:", company_info)
             if ',' in company_info:
                 company_name, ticker = company_info.split(', ')
                 company_name = company_name.strip()  # Clean up any leading/trailing whitespace
@@ -279,14 +283,13 @@ def collect_history(request):
                 # Historical data processing logic here
             #elif choice == '1':  # Prediction Data
                 # Prediction data processing logic here
-                
             stock=yf.Ticker(ticker)
             print("YFinance Ticker object:", stock)
             start_date = "2017-01-03"
-            csv_filename= f"{ticker}_stock_data.csv"
-            csv_filepath = os.path.join(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\myapp\data', csv_filename)
-            print("------------------",stock.info.get(stock))
-            data_stock = yf.download(stock.info.get(stock), start=start_date)
+            #csv_filename= f"{ticker}_stock_data.csv"
+            #csv_filepath = os.path.join(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\myapp\data', csv_filename)
+            #print("------------------",stock.info.get("symbol"))
+            data_stock = yf.download(stock.info.get(ticker), start=start_date)
             timeframe=365
             date=str(data_stock.index[0])
             if start_date[:10]!=date[:10]:
@@ -317,11 +320,11 @@ def save_stock_data(stock_name, stock_data):
             if data_stock.empty:
                     return JsonResponse({"error": "No data found for stock symbol"}, status = 4040)
             
-            project_root = os.path.dirname(os.path.abspath(_file_))
-            stock_data_folder = os.path.join(project_root, 'stockproject')
+            #project_root = os.path.dirname(os.path.abspath(file))
+            #stock_data_folder = os.path.join(project_root, 'stockproject')
             
             csv_filename= f"{stock_name}_stock_data.csv"
-            csv_filepath = os.path.join(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\myapp\data', csv_filename)
+            csv_filepath = os.path.join(base_path,'data',csv_filename)
             data_stock.to_csv(csv_filepath)
 
             return f"Stock data saved to: {csv_filename}"

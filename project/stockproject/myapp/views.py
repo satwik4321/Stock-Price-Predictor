@@ -66,7 +66,7 @@ def create_lstm_data_test(data, time_steps):
     y.append(data[i + time_steps:i+(2*time_steps), 0])
  return np.array(x), np.array(y)
 
-def train_model(name,data,input,scaler,size):
+def train_model(name,data,input,scaler,size,choice):
     channel_layer = get_channel_layer()
     for epoch in range(1, 11):
         # Simulate training with sleep
@@ -147,8 +147,7 @@ def train_model(name,data,input,scaler,size):
     request.method = 'GET'
     # Initialize the form
     form = StockForm()
-    choice=1
-    if choice==0:
+    if int(choice)==0:
         script,div=home(request,0,name)
     else:
         future_prices=pd.DataFrame(y_pred)
@@ -200,8 +199,6 @@ def train_model(name,data,input,scaler,size):
         dec = stock_data[stock_data["Greater_Than_Previous"]].index.tolist()
         print("indices:",dec)
         # Create a candlestick chart
-        '''inc = stock_data['Open'] > stock_data['Open']
-        dec = stock_data['Open'] > stock_data['Close']'''
         stock_data["Previous_Open"] = stock_data["Open"].shift(1)
         source_inc = ColumnDataSource(data=stock_data.iloc[inc])
         source_dec = ColumnDataSource(data=stock_data.iloc[dec])
@@ -258,23 +255,25 @@ def collect_history(request):
         print(request.POST)
         #input=0
         if form.is_valid():
-            choice = request.session.get('data_choice', 0)  # Default to 0
+            #choice = request.session.get('data_choice')
+            choice=form.cleaned_data['choices1']
+            print("required_data_type:",choice)
+            if choice==None:
+                print("none--------------") 
             # Initialize variables to ensure they are available in all code paths
-            ticker_input = form.cleaned_data.get('search')
-            company_info = form.cleaned_data.get('id_company_with_tickers')
-            #input = 0
-            print("Company Info:", company_info)  # Should output 'Company Name, Ticker'
-            if company_info==None:
-                company_info=form.cleaned_data.get('search')
-            print("Company Info:", company_info)
+            company_info = form.cleaned_data.get('company_with_tickers')
+            print("Company Info:", company_info)  # If a choice from  the ticker symbol
+            #if company_info==None:
+                #company_info=form.cleaned_data.get('search') #If text field is used then ticker symbol is stored
+            print("Company Info1:", company_info) 
             if ',' in company_info:
+                print("company info:",company_info)
                 company_name, ticker = company_info.split(', ')
                 company_name = company_name.strip()  # Clean up any leading/trailing whitespace
                 ticker = ticker.strip()  # Clean up any leading/trailing whitespace
             else:
                 company_name = "Unknown Company"
                 ticker = company_info.strip() or "Unknown Ticker"
-
             # Log the selected company and ticker for debugging
             print(f"Selected company: {company_name}, ticker: {ticker}")
 
@@ -283,13 +282,11 @@ def collect_history(request):
                 # Historical data processing logic here
             #elif choice == '1':  # Prediction Data
                 # Prediction data processing logic here
-            stock=yf.Ticker(ticker)
-            print("YFinance Ticker object:", stock)
+            #stock=yf.Ticker(ticker)
+            #print("YFinance Ticker object:", stock)
             start_date = "2017-01-03"
-            #csv_filename= f"{ticker}_stock_data.csv"
-            #csv_filepath = os.path.join(r'C:\Users\gogin\OneDrive\Documents\GitHub\SE Project\project\stockproject\myapp\data', csv_filename)
-            #print("------------------",stock.info.get("symbol"))
-            data_stock = yf.download(stock.info.get(ticker), start=start_date)
+            data_stock = yf.download(ticker, start=start_date)
+            print("data_loaded")
             timeframe=365
             date=str(data_stock.index[0])
             if start_date[:10]!=date[:10]:
@@ -299,7 +296,7 @@ def collect_history(request):
             data_close=data_stock['Close'].values.reshape(-1,1)
             scaler = MinMaxScaler(feature_range=(0, 1))
             close_prices_scaled = scaler.fit_transform(data_close)
-            script, div=train_model(ticker,close_prices_scaled,input,scaler,timeframe)
+            script, div=train_model(ticker,close_prices_scaled,input,scaler,timeframe,choice)
             # Return a JSON response
             # Prepare the plot title
             plot_title = f"{company_name} ({ticker}) Stock Price Graph"

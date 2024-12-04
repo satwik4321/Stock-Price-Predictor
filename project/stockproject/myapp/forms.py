@@ -34,19 +34,12 @@ class StockForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'}),
         initial=''
     )
-    search = forms.CharField(
-        label='Enter the ticker symbol for the stock:',
-        max_length=100,
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'})
-    )
     
     choices1 = forms.ChoiceField(
         label='Select Historical or Prediction data:',
-        choices=[(0,'Historical Data'),(1,'Prediction Data')],
-        required=False,
-        widget=forms.Select(attrs={'class': 'form-control'}),
-        initial=''
+        choices=[('0','Historical Data'),('1','Prediction Data')],
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     choices2 = forms.ChoiceField(
         label='Select future or past data:',

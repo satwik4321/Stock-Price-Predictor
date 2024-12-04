@@ -195,12 +195,43 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <script>
         const message = "{{ message }}";  // Django template syntax
-        alert(message);  // Display the message in an alert box
+        //alert(message);  // Display the message in an alert box
         $(document).ready(function() {
             // Initialize the select2 component for the company names
             $('#id_company_with_tickers').select2({
                 placeholder: "Select a stock", // Initial visible but unselected state
                 allowClear: true
+            });
+
+            // Validation function to check the ticker input against the selected company
+            function validateCompanyDetails() {
+                var initialSelection = $('#id_company_with_tickers').val();
+                var enteredTicker = $('#id_search').val().trim().toUpperCase(); // Trim and convert to uppercase
+
+                // Debug output to check what is being captured
+                console.log("Initial Selection:", initialSelection);
+                console.log("Entered Ticker:", enteredTicker);
+
+                if (initialSelection) {
+                    var parts = initialSelection.split(',');
+                    var initialTicker = parts.length > 1 ? parts[1].trim().toUpperCase() : ""; // Assuming the ticker is after the comma
+
+                    console.log("Initial Ticker Extracted:", initialTicker);
+
+                    // Check if the entered ticker matches the ticker part of the initial selection
+                    if (enteredTicker !== initialTicker) {
+                        alert("You Entered Different company stock details.");
+                        $('#id_search').val('');
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            $('form').on('submit', function(event) {
+                if (!validateCompanyDetails()) {
+                    event.preventDefault(); // Prevent form submission if validation fails
+                }
             });
 
             // Function to ensure mutual exclusivity between the dropdown and the input field

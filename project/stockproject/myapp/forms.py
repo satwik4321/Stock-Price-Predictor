@@ -29,7 +29,7 @@ class StockForm(forms.Form):
     )
     choices = forms.ChoiceField(
         label='Select one of the stocks from the list:',
-        choices=[('', 'Select the Company Name')] + [('AAPL', 'Apple'), ('GOOGL', 'Google'), ('NVDA', 'NVIDIA'), ('TSLA', 'Tesla'), ('WBD', 'Warner Bros Discovery'), ('AMZN', 'Amazon'), ('INTC', 'Intel'), ('NFLX', 'Netflix'), ('META', 'Meta'), ('F', 'Ford Motor')],
+        choices=[('', 'Select the Company Name')] + [('AAPL', 'Apple Inc.'), ('GOOGL', 'Alphabet Inc'), ('NVDA', 'NVIDIA Corporation'), ('TSLA', 'Tesla Inc.'), ('WBD', 'Warner Bros. Discovery Inc. Series A'), ('AMZN', 'Amazon.com Inc.'), ('INTC', 'Intel Corporation'), ('NFLX', 'Netflix Inc.'), ('META', 'Meta Platforms Inc.'), ('F', 'Ford Motor Company')],
         required=False,
         widget=forms.Select(attrs={'class': 'form-control'}),
         initial=''

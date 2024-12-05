@@ -79,7 +79,7 @@
             padding: 0.5rem;
             margin-top: -1cm;
             margin-bottom: 0.05rem;
-            width: 330%; /* Ensures that the card takes the full width of its container */
+            width: 270%; /* Ensures that the card takes the full width of its container */
             height: 80%;
         }
         .card4 {
@@ -88,6 +88,14 @@
             box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
             padding: 0.05rem;
             margin-bottom: 3rem;
+        }
+        .card5 {
+            background-color: rgb(95, 167, 209);
+            border-radius: 0.25rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            padding: 0.05rem;
+            margin-bottom: 3rem;
+            width: 180%
         }
         .vertical-line {
             position:absolute;
@@ -135,35 +143,32 @@
                         
                             {% csrf_token %}
                             <div class="form-group">
-                                <label for="stocks">Please choose a stock from the list of stocks or enter a ticker symbol for the stock you are looking for searching the ticker symbols in the first list</label>
-                                <label for="company_with_tickers">View stock names and ticker symbols(The list only for looking up ticker symbols and not for choosing a stock):</label>
+                                <label for="stocks">Please select a stock from only one of the lists below.</label>
+                                <label for="company_with_tickers">This list contains all stocks</label>
                                 {{ form.company_with_tickers }}
                             </div>
                             <div class="form-group">
-                                <label for="choices">Select one of the stocks from the list:</label>
+                                <label for="choices">This list contains stocks for which the prediction models have already been trained</label>
                                 {{ form.choices }}
                             </div>
-                            
                             <button type="submit" class="btn btn-primary">Submit</button>
-                        
                     </div>
                 </div>
             </div>
-
             <div class="col-md-1">
                 <div class="vertical-line"></div>
             </div>
 
             <div class="col-md-2">
                 <!-- Time Frame Selection -->
-                <div class="card2">
+                <div class="card5">
                     <div class="card-body">
                         <div class="form-group">
+                            Choose from past Data or Future Trend:
                                 {{ form.choices1 }}  
-                    </div>
+                        </div>
                     </div>
                 </div>
-
                 <!-- Bokeh Plot -->
                 <div class="card3">
                     <h3>{{ plot_title|default:"Apple Inc., AAPL" }}</h3>
@@ -178,11 +183,11 @@
                 </div>
             </div>
             
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="card4">
                     <div class="card-body">
+                        Choose timeframe:
                         {{ form.choices2 }}
-                        </select>
                     </div>
                 </div>
             </div>
@@ -239,10 +244,10 @@
                 var tickerSymbol = $('#id_search').val(); // Input for ticker symbol has an ID of 'id_search'
                 var companyName = $('#id_choices').val(); // Second dropdown has an ID of 'id_choices'
                 var list =$('#id_company_with_tickers').val()
-                
+
                 // If both inputs are filled, clear the last one modified by the user
-                if (tickerSymbol && companyName) {
-                    alert("Please select either one (Company Name or Ticker Symbol), not both.");
+                if (list && companyName) {
+                    alert("Please select from one of the lists only.");
                     $('#id_search').val(''); // Clear the ticker symbol field if both are filled
                     $('#id_choices').val(''); // Optionally clear the dropdown if both are filled
                     return false;

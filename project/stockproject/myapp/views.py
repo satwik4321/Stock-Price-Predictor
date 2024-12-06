@@ -60,7 +60,65 @@ def create_lstm_data_train(data, time_steps):
         y.append(data[i + time_steps:i+(2*time_steps), 0])
 
     return np.array(x), np.array(y)
+def create_multi_step_sequences(data, sequence_length, n_future_steps):
+    """
+    Create sequences for multi-step prediction.
+    
+    :param data: Scaled time series data.
+    :param sequence_length: Number of timesteps in input sequence.
+    :param n_future_steps: Number of future timesteps to predict.
+    :return: Features (X) and targets (y) for multi-step prediction.
+    """
+    X = []
+    y = []
+    sequence_length=int(sequence_length)
+    n_future_steps=int(n_future_steps)
+    for i in range(sequence_length, len(data) - n_future_steps + 1):
+        X.append(data[i - sequence_length:i, 0])  # Sequence of input data
+        y.append(data[i:i + n_future_steps, 0])   # Corresponding future steps
 
+    return np.array(X), np.array(y)
+def build_multi_step_lstm(input_shape, n_future_steps):
+    """
+    Build an LSTM model for multi-step prediction.
+    
+    :param input_shape: Shape of the input data (sequence_length, 1).
+    :param n_future_steps: Number of future steps to predict.
+    :return: Compiled LSTM model.
+    """
+    model = Sequential()
+    model.add(LSTM(units=50, return_sequences=True, input_shape=input_shape))
+    model.add(Dropout(0.2))
+    model.add(LSTM(units=50, return_sequences=False))
+    model.add(Dropout(0.2))
+    model.add(Dense(units=25))
+    model.add(Dense(units=n_future_steps))  # Output future steps
+    model.compile(optimizer='adam', loss='mean_squared_error')
+    return model
+def predict_future(model, initial_sequence, n_future_steps, scaler):
+    """
+    Predict multiple future steps based on the current sequence.
+
+    :param model: Trained LSTM model.
+    :param initial_sequence: Last sequence of data to start predictions.
+    :param n_future_steps: Number of future steps to predict.
+    :param scaler: Scaler object to inverse transform predictions.
+    :return: Array of predicted values.
+    """
+    predictions = []
+    current_sequence = initial_sequence.copy()  # Start with the last known sequence
+
+    for _ in range(n_future_steps):
+        # Predict the next time step
+        prediction = model.predict(current_sequence.reshape(1, current_sequence.shape[0], 1))
+        predictions.append(prediction[0, 0])
+
+        # Update the current sequence (remove the oldest value and append the prediction)
+        current_sequence = np.append(current_sequence[1:], prediction)
+
+    # Rescale predictions back to the original scale
+    predictions = scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
+    return predictions
 def create_lstm_data_test(data, time_steps):
     x, y = [], []
     training_len=int(np.ceil(len(data)*0.25))
@@ -78,8 +136,32 @@ def create_lstm_data_test(data, time_steps):
         x.append(data[i:(i + time_steps), 0])
         y.append(data[i + time_steps:i+(2*time_steps), 0])
     return np.array(x), np.array(y)
+def preprocess_data_lstm(stock_data):
+    # Extract closing prices and reshape
+    close_prices = stock_data['Open'].values.reshape(-1, 1)
 
-def train_model(name,data,input,scaler,size,choice):
+    # Scale data to range [0, 1]
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled_data = scaler.fit_transform(close_prices)
+
+    return scaled_data, scaler
+def create_sequences(data, sequence_length):
+    X = []
+    y = []
+    sequence_length=int(sequence_length)
+    print("sequence_length-----------",sequence_length)
+    for i in range(sequence_length, len(data)):
+        X.append(data[i-sequence_length:i, 0])  # Sequence of prices
+        y.append(data[i, 0])  # Next price
+
+    return np.array(X), np.array(y)
+def train_model(name,X,y,input,scaler,size,choice):
+    split_ratio = 0.8
+    split_index = int(len(X) * split_ratio)
+    X_train, X_test = X[:split_index], X[split_index:]
+    y_train, y_test = y[:split_index], y[split_index:]
+    if size=="MAX":
+        size=int(len(X_train)/3)
     print("size---------------",size)
     #print("input at beginning:------------",data)
     request = HttpRequest()
@@ -93,9 +175,9 @@ def train_model(name,data,input,scaler,size,choice):
                 time.sleep(1)  # Replace with model training code
                 progress = epoch * 10  # Simulate progress in %
                 loss = random.uniform(1, 3)  # Simulate loss value
-            x,y=create_lstm_data_train(data,size)
-            x = x.reshape((x.shape[0], x.shape[1], 1))
-            y = y.reshape((y.shape[0], y.shape[1], 1))  # Ensure target matches the output shape
+            #x,y=create_lstm_data_train(data,size)
+            #x = x.reshape((x.shape[0], x.shape[1], 1))
+            #y = y.reshape((y.shape[0], y.shape[1], 1))  # Ensure target matches the output shape
 
             name_f=str(name+'.h5')
             full_path=os.path.join(data_path,name_f)
@@ -113,22 +195,25 @@ def train_model(name,data,input,scaler,size,choice):
                 if full_path.is_file():
                     model = keras.models.load_model(full_path)    
                 else:
+                    input_shape=(X_train.shape[1],1)
                     model = Sequential()
-                    model.add(LSTM(128, return_sequences=True, input_shape=(len(x[0]), 1)))
-                    model.add(LSTM(64, return_sequences=True))
-                    model.add(LSTM(32, return_sequences=True, dropout=0.2, recurrent_dropout=0.2))
-                    model.add(TimeDistributed(Dense(1)))
+                    model.add(LSTM(units=50, return_sequences=True, input_shape=input_shape))
+                    model.add(Dropout(0.2))  # Dropout for regularization
+                    model.add(LSTM(units=50, return_sequences=False))
+                    model.add(Dropout(0.2))
+                    model.add(Dense(units=25))
+                    model.add(Dense(units=1))
                     
                     # Compile the model
                     optimizer=Adam(learning_rate=0.018)
                     model.compile(optimizer=optimizer, loss='mean_absolute_error')
-                    
+                    model=build_multi_step_lstm((X_train.shape[1], 1), size)
 
                     # Create a fake request object
                     request = HttpRequest()
                     # Optionally, you can set request.method or request.path
                     request.method = 'GET'
-                    model.fit(x, y, batch_size=128, epochs=10,callbacks=[early_stopping])
+                    model.fit(X_train, y_train, batch_size=128, epochs=10,callbacks=[early_stopping])
                     name_f=str(name+'.h5')
                     full_path=os.path.join(base_path,'models',name_f)
                     #print(full_path)
@@ -138,30 +223,39 @@ def train_model(name,data,input,scaler,size,choice):
                 full_path=os.path.join(base_path1,"models",name_f)
                 model = keras.models.load_model(full_path)
             print("size--------------",size)
-            x,y=create_lstm_data_test(data,size)
-            print(len(x[0]))
-            test_loss = model.evaluate(x, y)
+            #x,y=create_lstm_data_test(data,size)
+            #print(len(x[0]))
+            test_loss = model.evaluate(X_test, y_test)
             print('Test Loss:', test_loss)
             #print("x-----------------------",x[0].reshape(1,len(x[0]),1))
             #y_pred=model.predict(x[0].reshape(1,len(x[0]),1))
             #y_pred=model.predict(x)
-            y_pred = model.predict(x[-2].reshape(1, len(x[-1]), 1))
-            y_pred=y_pred.reshape(-1,1)
-            print("y_pred:---------------",y_pred)
+            #y_pred = model.predict(x[-2].reshape(1, len(x[-1]), 1))
+            #y_pred=y_pred.reshape(-1,1)
+            predictions = model.predict(X_test)
+            
+            #predictions = scaler.inverse_transform(predictions.reshape(-1, 1))  # Rescale to original range
+            actual_prices = scaler.inverse_transform(y_test.reshape(-1, 1))
+            #print("y_pred:---------------",predictions,actual_prices)
             y=y.reshape(-1,1)
             #print("x actual-------------",x[-1])
-            y_actual=y[:len(y_pred)]
+            #y_actual=y[:len(y_pred)]
             request = HttpRequest()
             request.method = 'GET'
             # Initialize the form
             form = StockForm()
-            future_prices=pd.DataFrame(y_pred)
+            future_prices=pd.DataFrame(predictions)
             interval = "1m"  # 1-minute interval
 
-            next_days = get_next_n_days(len(y_pred)) #Get the next n dates
-            y_pred=y_pred.reshape(-1)
-            print("len of y_pred:",len(y_pred))
-            stock_data=pd.DataFrame({"Date":next_days,"Open":y_pred})
+            next_days = get_next_n_days(size) #Get the next n dates
+            #predictions=predict_future(model,y_test,size,scaler)
+            scaler.inverse_transform(y_test.reshape(-1, 1))
+            predictions=model.predict(X_test)
+            predictions = scaler.inverse_transform(predictions)
+            predictions=predictions.reshape(-1)
+            predictions=predictions[:size]
+            #print("len of y_pred:",len(y_pred))
+            stock_data=pd.DataFrame({"Date":next_days,"Open":predictions})
             # Reset index and flatten MultiIndex columns
             stock_data.reset_index(inplace=True)
             stock_data.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in stock_data.columns]
@@ -213,7 +307,7 @@ def train_model(name,data,input,scaler,size,choice):
             p.segment(x0='Date', y0='Previous_Open', x1='Date', y1='Open', color="green", source=source_inc)
             #p.vbar(x='Date', width=width, top='Open', bottom='Close', fill_color="#D5E1DD", line_color="black", source=source_inc)
             # Plot decreasing candles (red)
-            p.segment(x0='Date', y0='Previous_Open', x1='Date', y1='Previous_Open_plus_one', color="red", source=source_dec)
+            p.segment(x0='Date', y0='Previous_Open', x1='Date', y1='Open', color="red", source=source_dec)
             #p.vbar(x='Date', width=width, top='Open', bottom='Close', fill_color="#F2583E", line_color="black", source=source_dec)
             p.segment(
     x0="Date", x1="Date",  # Use the same Date for start and end (vertical line)
@@ -274,26 +368,38 @@ def collect_history(request):
             # Log the selected company and ticker for debugging
             print(f"Selected company: {company_name}, ticker: {ticker}")
             start_date = "2017-01-03"
-            data_stock = yf.download(ticker, start=start_date)
-            print("data_loaded")
+            stock_data = yf.download(ticker, start=start_date)
+            print("data head----------",stock_data.tail())
             timeframe1=365
             #print(data_stock)
-            date=str(data_stock.index[0])
+            date=str(stock_data.index[0])
             if start_date[:10]!=date[:10]:
                 timeframe1=60
-            save_stock_data(ticker, data_stock)
+            save_stock_data(ticker, stock_data)
         
-            data_close=data_stock['Close'].values.reshape(-1,1)
+            data_close=stock_data['Close'].values.reshape(-1,1)
             scaler = MinMaxScaler(feature_range=(0, 1))
             close_prices_scaled = scaler.fit_transform(data_close)
-            script, div=train_model(ticker,data_close,input,scaler,timeframe,choice)
+            scaled_data, scaler = preprocess_data_lstm(stock_data)
+            # Step 3: Create sequences
+            sequence_length=60
+            X, y = create_sequences(scaled_data,timeframe)
+            X = X.reshape((X.shape[0], X.shape[1], 1))  # Reshape for LSTM input
+
+            # Split into training and test sets
+            split_ratio = 0.8
+            split_index = int(len(X) * split_ratio)
+            
+            X,y=create_multi_step_sequences(scaled_data,360,timeframe)
+            X = X.reshape((X.shape[0], X.shape[1], 1))
+            script, div=train_model(ticker,X,y,input,scaler,timeframe,choice)
             # Prepare the plot title
             if choice=="0":
                 plot_title = f"{company_name} ({ticker}) Historical Data"
             else:
                 plot_title = f"{company_name} ({ticker}) Predicted Trend"
 
-            return render(request, 'myapp/home.html', {'form': form, 'script': script, 'div': div, 'plot_title': plot_title, 'data': data_stock.to_dict()})
+            return render(request, 'myapp/home.html', {'form': form, 'script': script, 'div': div, 'plot_title': plot_title, 'data': stock_data.to_dict()})
         else:
             print("Form errors:", form.errors)
     return JsonResponse({"error": "Invalid request"}, status=400)

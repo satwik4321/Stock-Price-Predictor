@@ -119,6 +119,10 @@
                     // Prevent form submission
                     event.preventDefault();
                 }
+                if (!companyTicker && !stockSelection) {
+                    alert("Please select at least one option before submitting.");
+                    event.preventDefault(); // Prevent form submission
+                }
             });
         });
 

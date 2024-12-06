@@ -78,7 +78,7 @@
             <div class="col-md-3 offset-md-1">
                 <div class="card4">
                     <div class="card-body">
-                        Choose time frame(Predictions for some time frames may not be available due to lack of sufficient data):
+                        Choose timeframe:
                         {{ form.choices2 }}
                     </div>
                 </div>
@@ -119,6 +119,10 @@
                     // Prevent form submission
                     event.preventDefault();
                 }
+                if (!companyTicker && !stockSelection) {
+                    alert("Please select at least one option before submitting.");
+                    event.preventDefault(); // Prevent form submission
+                }
             });
         });
 
@@ -144,4 +148,3 @@
     </script>
 </body>
 </html>
-

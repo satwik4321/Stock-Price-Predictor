@@ -4,143 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Price Prediction</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'myapp/css/style.css' %}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
     <!-- Bootstrap CSS CDN -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .time-frames select {
-            padding: 10px;
-            width: 100%;
-            cursor: pointer;
-        }
-        .progress-bar {
-            width: 100%;
-            background-color: #f3f3f3;
-        }
-        .progress {
-            height: 24px;
-            width: 0%;
-            background-color: #4caf50;
-            text-align: center;
-            color: white;
-        }
-        hr {
-            border: none;
-            height: 2px;
-            background-color: black; 
-            width: 100%;
-        }
-        form {
-            padding: 20px;
-            background: #f4f4f4;
-            border-radius: 8px;
-        }
-        label, select, input, button {
-            display: block;
-            width: 80%; 
-            margin-bottom: 10px;
-        }
-        select {
-            width: 50%;
-            max-width: 300px;
-        }
-        button {
-            width: 150px; 
-            height: 40px; 
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 20px; 
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .card {
-            background-color: rgb(95, 167, 209);
-            border-radius: 0.25rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
-            padding: 1rem;
-            margin-bottom: 3rem;
-        }
-        .card2 {
-            background-color: rgb(95, 167, 209);
-            border-radius: 0.25rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
-            padding: 0.05rem;
-            margin-bottom: 3rem;
-        }
-        .card3 {
-            background-color: rgb(95, 167, 209);
-            border-radius: 0.25rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
-            padding: 0.5rem;
-            margin-top: -1cm;
-            margin-bottom: 0.05rem;
-            width: 270%; /* Ensures that the card takes the full width of its container */
-            height: 80%;
-        }
-        .card4 {
-            background-color: rgb(95, 167, 209);
-            border-radius: 0.25rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
-            padding: 0.05rem;
-            margin-bottom: 3rem;
-        }
-        .card5 {
-            background-color: rgb(95, 167, 209);
-            border-radius: 0.25rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
-            padding: 0.05rem;
-            margin-bottom: 3rem;
-            width: 180%
-        }
-        .vertical-line {
-            position:absolute;
-            left: 45%;
-            top: 0;
-            bottom: 0;
-            border-left: 2px solid #000;
-            margin-top: -15px;
-            margin-bottom: 15px;
-        }
-        .select-placeholder option:first-child {
-            color: grey; /* Change the color to grey or another light color */
-            display: none; /* Hide from the dropdown */
-        }
-        .bokeh-plot-container {
-            width: 100%; /* This will make the Bokeh plot fill the card3 */
-            height: 400px; /* Adjust this value based on your desired plot height */
-            overflow: hidden;  /* Optional, to handle overflow if the plot is larger than the container */
-            margin-bottom: -200px;
-        }
-    </style>
+    
     <!-- Load BokehJS -->
     <link href="https://cdn.bokeh.org/bokeh/release/bokeh-3.6.1.min.css" rel="stylesheet">
     <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.6.1.min.js"></script>
 </head>
-<body>
-    <div class="progress-bar">
-        <div id="progress" class="progress">0%</div>
-    </div>
-    <!--<p id="epoch">Epoch: 0</p>
-    <p id="loss">Loss: N/A</p>-->
+<body class="background-video">
+    <video autoplay loop muted playsinline class="video-fullscreen">
+        <source src="{% static 'myapp/videos/background_video.mp4' %}" type="video/mp4">
+    </video>
+
     <div class="container-fluid mt-4">
         <div class="row">
             <div class="col-md-12 text-center">
-                <h1>STOCK PRICE PREDICTION</h1>
+                <h1 style="color: rgb(255, 255, 255); font-style: italic;">STOCK PRICE PREDICTION</h1>
             </div>
         </div>
-        <hr>
+        <br>
         <form method="post" action="{% url 'collect_history' %}">
         <div class="row">
-            <div class="col-md-5">
+            <div class="col-md-4 offset-md-1">
                 <!-- Form Area -->
                 <div class="card">
                     <div class="card-body">
-                        
                             {% csrf_token %}
                             <div class="form-group">
                                 <label for="stocks">Please select a stock from only one of the lists below.</label>
@@ -155,13 +46,14 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-1">
+
+            <!--<div class="col-md-1">
                 <div class="vertical-line"></div>
-            </div>
+            </div>-->
 
             <div class="col-md-2">
-                <!-- Time Frame Selection -->
-                <div class="card5">
+
+                <div class="card2">
                     <div class="card-body">
                         <div class="form-group">
                             Choose from past Data or Future Trend:
@@ -171,7 +63,7 @@
                 </div>
                 <!-- Bokeh Plot -->
                 <div class="card3">
-                    <h3>{{ plot_title|default:"Apple Inc., AAPL" }}</h3>
+                    <h3>{{ plot_title|default:"Sample Stock Graph" }}</h3>
                         <div>
                             {% if div %}
                                 {{ div|safe }}
@@ -183,7 +75,7 @@
                 </div>
             </div>
             
-            <div class="col-md-4">
+            <div class="col-md-3 offset-md-1">
                 <div class="card4">
                     <div class="card-body">
                         Choose time frame(Predictions for some time frames may not be available due to lack of sufficient data):
@@ -210,65 +102,22 @@
             });
 
             // Validation function to check the ticker input against the selected company
-            function validateCompanyDetails() {
-                var initialSelection = $('#id_company_with_tickers').val();
-                var enteredTicker = $('#id_search').val().trim().toUpperCase(); // Trim and convert to uppercase
-                // Debug output to check what is being captured
-                console.log("Initial Selection:", initialSelection);
-                console.log("Entered Ticker:", enteredTicker);
-
-                if (initialSelection) {
-                    var parts = initialSelection.split(',');
-                    var initialTicker = parts.length > 1 ? parts[1].trim().toUpperCase() : ""; // Assuming the ticker is after the comma
-
-                    console.log("Initial Ticker Extracted:", initialTicker);
-
-                    // Check if the entered ticker matches the ticker part of the initial selection
-                    if (enteredTicker !== initialTicker) {
-                        alert("You Entered Different company stock details.");
-                        $('#id_search').val('');
-                        return false;
-                    }
-                }
-                return true;
-            }
-
-            $('form').on('submit', function(event) {
-                if (!validateCompanyDetails()) {
-                    event.preventDefault(); // Prevent form submission if validation fails
-                }
-            });
-
-            // Function to ensure mutual exclusivity between the dropdown and the input field
-            function enforceSingleInput() {
-                var tickerSymbol = $('#id_search').val(); // Input for ticker symbol has an ID of 'id_search'
-                var companyName = $('#id_choices').val(); // Second dropdown has an ID of 'id_choices'
-                var list =$('#id_company_with_tickers').val()
-
-                // If both inputs are filled, clear the last one modified by the user
-                if (list && companyName) {
-                    alert("Please select from one of the lists only.");
-                    $('#id_search').val(''); // Clear the ticker symbol field if both are filled
-                    $('#id_choices').val(''); // Optionally clear the dropdown if both are filled
-                    return false;
-                }
-                return true;
-            }
-
-            // Monitor changes on the company name dropdown
-            $('#id_choices').on('change', function() {
-                enforceSingleInput(); // Enforce the rule of single input
-            });
-
-            // Monitor input changes on the ticker symbol field
-            $('#id_search').on('input', function() {
-                enforceSingleInput(); // Enforce the rule of single input
-            });
-
-            // Prevent form submission if both inputs are filled
+            // Function to disable one dropdown if the other has a selected value
             $('form').submit(function(event) {
-                if (!enforceSingleInput()) {
-                    event.preventDefault(); // Prevent form submission if validation fails
+                var companyTicker = $('#id_company_with_tickers').val();
+                var stockSelection = $('#id_choices').val();
+
+                // Check if both dropdowns have selections when the form is submitted
+                if (companyTicker && stockSelection) {
+                    // Display the alert
+                    alert("Please select only one dropdown box.");
+
+                    // Clear both dropdowns and reset them to the placeholder
+                    $('#id_company_with_tickers').val(null).trigger('change');
+                    $('#id_choices').val(null).trigger('change');
+
+                    // Prevent form submission
+                    event.preventDefault();
                 }
             });
         });

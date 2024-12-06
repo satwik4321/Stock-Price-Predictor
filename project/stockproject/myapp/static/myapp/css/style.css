@@ -1,0 +1,116 @@
+.time-frames select {
+    padding: 10px;
+    width: 100%;
+    cursor: pointer;
+}
+/*.progress-bar {
+    display: none;
+    width: 100%;
+    background-color: #f3f3f3;
+}*/
+.progress {
+    height: 24px;
+    width: 0%;
+    background-color: #4caf50;
+    text-align: center;
+    color: white;
+}
+hr {
+    border: none;
+    height: 2px;
+    background-color: black; 
+    width: 100%;
+}
+/*form {
+    padding: 20px;
+    background: #f4f4f4;
+    border-radius: 8px;
+}*/
+label, select, input, button {
+    display: block;
+    width: 80%; 
+    margin-bottom: 10px;
+}
+select {
+    width: 100%; /* Full width of the container */
+    padding: 8px 10px;
+    border: 2px solid #007bff; /* Blue border color */
+    border-radius: 4px; /* Rounded corners */
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    font-size: 16px; /* Larger font size for better readability */
+    cursor: pointer;
+}
+button {
+    width: 150px; 
+    height: 40px; 
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 20px; 
+}
+button:hover {
+    background-color: #0056b3;
+}
+.card {
+    background-color: rgb(95, 167, 209);
+    border-radius: 0.25rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+    padding: 0.5rem;
+    margin-bottom: 3rem;
+}
+.card2 {
+    background-color: rgb(95, 167, 209);
+    border-radius: 0.25rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+    padding: 0.05rem;
+    margin-bottom: 3rem;
+}
+.card3 {
+    background-color: rgb(95, 167, 209);
+    border-radius: 0.25rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+    padding: 0.5rem;
+    margin-top: -1cm;
+    margin-bottom: 0.05rem;
+    width: 330%; /* Ensures that the card takes the full width of its container */
+    height: 86%;
+}
+.card4 {
+    background-color: rgb(95, 167, 209);
+    border-radius: 0.25rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+    padding: 0.05rem;
+    margin-bottom: 3rem;
+}
+.vertical-line {
+    position:absolute;
+    left: 45%;
+    top: 0;
+    bottom: 0;
+    border-left: 2px solid #000;
+    margin-top: -15px;
+    margin-bottom: 15px;
+}
+.select-placeholder option:first-child {
+    color: grey; /* Change the color to grey or another light color */
+    display: none; /* Hide from the dropdown */
+}
+.bokeh-plot-container {
+    width: 100%; /* This will make the Bokeh plot fill the card3 */
+    height: 400px; /* Adjust this value based on your desired plot height */
+    overflow: hidden;  /* Optional, to handle overflow if the plot is larger than the container */
+    margin-bottom: -200px;
+}
+.video-fullscreen {
+    position: fixed; /* Use fixed to cover the entire screen and scroll with the content */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh; /* Viewport height to cover the full height of the screen */
+    object-fit: cover; /* Cover the entire viewport without losing aspect ratio */
+    z-index: -1; /* Make sure it stays in the background */
+}

@@ -77,7 +77,7 @@ button:hover {
     margin-top: -1cm;
     margin-bottom: 0.05rem;
     width: 330%; /* Ensures that the card takes the full width of its container */
-    height: 86%;
+    height: 81%;
 }
 .card4 {
     background-color: rgb(95, 167, 209);

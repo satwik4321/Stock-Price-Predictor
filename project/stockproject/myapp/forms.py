@@ -18,7 +18,8 @@ def load_ticker_choices():
         print(f"An error occurred: {e}")
     #print("Choices loaded:", choices) 
     return choices
-
+global list_stocks
+list_stocks=[('', 'Select the Company Name')] + [('AAPL', 'Apple Inc.'), ('GOOGL', 'Alphabet Inc'), ('NVDA', 'NVIDIA Corporation'), ('TSLA', 'Tesla Inc.'), ('WBD', 'Warner Bros. Discovery Inc. Series A'), ('AMZN', 'Amazon.com Inc.'), ('INTC', 'Intel Corporation'), ('NFLX', 'Netflix Inc.'), ('META', 'Meta Platforms Inc.'), ('F', 'Ford Motor Company')]
 
 class StockForm(forms.Form):
 
@@ -31,7 +32,7 @@ class StockForm(forms.Form):
 
     choices = forms.ChoiceField(
         label='Select one of the stocks from the list:',
-        choices=[('', 'Select the Company Name')] + [('AAPL', 'Apple Inc.'), ('GOOGL', 'Alphabet Inc'), ('NVDA', 'NVIDIA Corporation'), ('TSLA', 'Tesla Inc.'), ('WBD', 'Warner Bros. Discovery Inc. Series A'), ('AMZN', 'Amazon.com Inc.'), ('INTC', 'Intel Corporation'), ('NFLX', 'Netflix Inc.'), ('META', 'Meta Platforms Inc.'), ('F', 'Ford Motor Company')],
+        choices=list_stocks,
         required=False,
         widget=forms.Select(attrs={'class': 'form-control'}),
         initial=''
@@ -52,9 +53,10 @@ class StockForm(forms.Form):
         initial=''
     )
 
-def update_choices():
-    file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
-    list_stocks = []
-    for fname in os.listdir(file_path):
-        list_stocks.append((str(fname[:-3]), ''))
-    return list_stocks
+    def update_choices():
+        base_path = os.getenv("PROJECT_ROOT", ".")
+        file_path = os.path.join(base_path,"models")
+        list_stocks = []
+        for fname in os.listdir(file_path):
+            list_stocks.append((str(fname[:-3]), ''))
+        #return list_stocks

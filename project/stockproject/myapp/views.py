@@ -40,7 +40,20 @@ import pandas as pd
 from datetime import datetime
 
 from datetime import date, timedelta
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
 
+
+def fetch_stock_data(request):
+    global stocks
+    # Example: Fetch data for all stocks
+    # Use yfinance or any other library to fetch stock data
+    data = {}
+    for stock in stocks:
+        ticker = yf.Ticker(stock)
+        data[stock] = ticker.info.get("longName", "Unknown Company")
+    
+    return JsonResponse(data)
 base_path = os.getenv("PROJECT_ROOT", ".")
 data_path = os.path.join(base_path, "data", "input.txt")
 base_path1=base_path
@@ -149,25 +162,27 @@ def create_sequences(data, sequence_length):
     X = []
     y = []
     sequence_length=int(sequence_length)
-    print("sequence_length-----------",sequence_length)
     for i in range(sequence_length, len(data)):
         X.append(data[i-sequence_length:i, 0])  # Sequence of prices
         y.append(data[i, 0])  # Next price
 
     return np.array(X), np.array(y)
-def train_model(name,X,y,input,scaler,size,choice):
+def train_model(name,X,y,input,scaler,size,choice,stock_data):
     split_ratio = 0.8
     split_index = int(len(X) * split_ratio)
     X_train, X_test = X[:split_index], X[split_index:]
     y_train, y_test = y[:split_index], y[split_index:]
+    size1=0
     if size=="MAX":
+        size1="MAX"
         size=int(len(X_train)/3)
-    print("size---------------",size)
-    #print("input at beginning:------------",data)
     request = HttpRequest()
-    request.method = 'GET'
+    request.method = 'GET'    
     if int(choice)==0:
-        script,div=home(request,0,name,size)
+        if size1=="MAX":
+            script,div=home(request,0,name,size1)
+        else:
+            script,div=home(request,0,name,int(size))
     else:
             size=int(size)
             for epoch in range(1, 11):
@@ -181,7 +196,6 @@ def train_model(name,X,y,input,scaler,size,choice):
 
             name_f=str(name+'.h5')
             full_path=os.path.join(data_path,name_f)
-            #print("x----------------------",x)
             if input==0:
                 name_f=str(name+'.h5')
                 full_path=os.path.join(data_path,name_f)
@@ -207,7 +221,7 @@ def train_model(name,X,y,input,scaler,size,choice):
                     # Compile the model
                     optimizer=Adam(learning_rate=0.018)
                     model.compile(optimizer=optimizer, loss='mean_absolute_error')
-                    model=build_multi_step_lstm((X_train.shape[1], 1), size)
+                    model=build_multi_step_lstm((X_train.shape[1], 1), 360)
 
                     # Create a fake request object
                     request = HttpRequest()
@@ -216,30 +230,18 @@ def train_model(name,X,y,input,scaler,size,choice):
                     model.fit(X_train, y_train, batch_size=128, epochs=10,callbacks=[early_stopping])
                     name_f=str(name+'.h5')
                     full_path=os.path.join(base_path,'models',name_f)
-                    #print(full_path)
                     model.save(full_path)
             else:
                 name_f=str(name+'.h5')
                 full_path=os.path.join(base_path1,"models",name_f)
                 model = keras.models.load_model(full_path)
-            print("size--------------",size)
-            #x,y=create_lstm_data_test(data,size)
-            #print(len(x[0]))
             test_loss = model.evaluate(X_test, y_test)
             print('Test Loss:', test_loss)
-            #print("x-----------------------",x[0].reshape(1,len(x[0]),1))
-            #y_pred=model.predict(x[0].reshape(1,len(x[0]),1))
-            #y_pred=model.predict(x)
-            #y_pred = model.predict(x[-2].reshape(1, len(x[-1]), 1))
-            #y_pred=y_pred.reshape(-1,1)
             predictions = model.predict(X_test)
             
-            #predictions = scaler.inverse_transform(predictions.reshape(-1, 1))  # Rescale to original range
+            
             actual_prices = scaler.inverse_transform(y_test.reshape(-1, 1))
-            #print("y_pred:---------------",predictions,actual_prices)
             y=y.reshape(-1,1)
-            #print("x actual-------------",x[-1])
-            #y_actual=y[:len(y_pred)]
             request = HttpRequest()
             request.method = 'GET'
             # Initialize the form
@@ -248,13 +250,22 @@ def train_model(name,X,y,input,scaler,size,choice):
             interval = "1m"  # 1-minute interval
 
             next_days = get_next_n_days(size) #Get the next n dates
-            #predictions=predict_future(model,y_test,size,scaler)
             scaler.inverse_transform(y_test.reshape(-1, 1))
             predictions=model.predict(X_test)
             predictions = scaler.inverse_transform(predictions)
             predictions=predictions.reshape(-1)
+            MAE=0
+    
+            for i in range(len(predictions)):
+                MAE+=abs(predictions[i]-actual_prices[i])
+            
+            MAE/=len(predictions)
+            print("Mean absolute error:",MAE)
             predictions=predictions[:size]
-            #print("len of y_pred:",len(y_pred))
+            print("-----------------------",stock_data[-1])
+            print(predictions[0])
+            if predictions[0]<stock_data[-1]:
+                predictions=predictions+(stock_data[-1]-predictions[0])
             stock_data=pd.DataFrame({"Date":next_days,"Open":predictions})
             # Reset index and flatten MultiIndex columns
             stock_data.reset_index(inplace=True)
@@ -292,7 +303,6 @@ def train_model(name,X,y,input,scaler,size,choice):
             source_inc = ColumnDataSource(data=stock_data.iloc[inc])
             source_dec = ColumnDataSource(data=stock_data.iloc[dec])
             source_same= ColumnDataSource(data=stock_data.iloc[same])
-            print("indices:",dec,inc,same)
             p = figure(
                 x_axis_type="datetime",
                 height=600,
@@ -305,10 +315,8 @@ def train_model(name,X,y,input,scaler,size,choice):
             
             # Plot increasing candles (green)
             p.segment(x0='Date', y0='Previous_Open', x1='Date', y1='Open', color="green", source=source_inc)
-            #p.vbar(x='Date', width=width, top='Open', bottom='Close', fill_color="#D5E1DD", line_color="black", source=source_inc)
             # Plot decreasing candles (red)
             p.segment(x0='Date', y0='Previous_Open', x1='Date', y1='Open', color="red", source=source_dec)
-            #p.vbar(x='Date', width=width, top='Open', bottom='Close', fill_color="#F2583E", line_color="black", source=source_dec)
             p.segment(
     x0="Date", x1="Date",  # Use the same Date for start and end (vertical line)
     y0="Previous_Open", y1="Open", # Same values for Open and Close (horizontal line)
@@ -330,15 +338,16 @@ def train_model(name,X,y,input,scaler,size,choice):
             script, div = components(p)
 
             # Render the home.html template with the Bokeh chart
+    
     return script,div
     #Don't delete the code below
-    '''MAE=0
+    MAE=0
     
     for i in range(len(y_pred)):
         MAE+=abs(y_pred[i]-y_actual[i])
     
     MAE/=len(y_pred)
-    print("Mean absolute error:",MAE)'''
+    print("Mean absolute error:",MAE)
 
 def collect_history(request):
     if request.method == 'POST':
@@ -346,18 +355,13 @@ def collect_history(request):
         if form.is_valid():
             choice=form.cleaned_data['choices1']
             timeframe=form.cleaned_data.get("choices2")
-            print("required_data_type:",choice)
             # Initialize variables to ensure they are available in all code paths
             company_info = form.cleaned_data.get('company_with_tickers')
             input=0
-            print("Company Info:", company_info)  # If a choice from  the ticker symbol
             if company_info=='':
-                print("none selected")
                 company_info=form.cleaned_data.get('choices')
                 input=1
-            print("Company Info1:", company_info) 
             if ',' in company_info:
-                print("company info:",company_info)
                 company_name, ticker = company_info.split(', ')
                 company_name = company_name.strip()  # Clean up any leading/trailing whitespace
                 ticker = ticker.strip()  # Clean up any leading/trailing whitespace
@@ -369,7 +373,6 @@ def collect_history(request):
             print(f"Selected company: {company_name}, ticker: {ticker}")
             start_date = "2017-01-03"
             stock_data = yf.download(ticker, start=start_date)
-            print("data head----------",stock_data.tail())
             timeframe1=365
             #print(data_stock)
             date=str(stock_data.index[0])
@@ -383,16 +386,15 @@ def collect_history(request):
             scaled_data, scaler = preprocess_data_lstm(stock_data)
             # Step 3: Create sequences
             sequence_length=60
-            X, y = create_sequences(scaled_data,timeframe)
-            X = X.reshape((X.shape[0], X.shape[1], 1))  # Reshape for LSTM input
 
             # Split into training and test sets
+            
+            
+            X,y=create_multi_step_sequences(scaled_data,360,360)
+            X = X.reshape((X.shape[0], X.shape[1], 1))
             split_ratio = 0.8
             split_index = int(len(X) * split_ratio)
-            
-            X,y=create_multi_step_sequences(scaled_data,360,timeframe)
-            X = X.reshape((X.shape[0], X.shape[1], 1))
-            script, div=train_model(ticker,X,y,input,scaler,timeframe,choice)
+            script, div=train_model(ticker,X,y,input,scaler,timeframe,choice,stock_data['Open'].values.reshape(-1, 1))
             # Prepare the plot title
             if choice=="0":
                 plot_title = f"{company_name} ({ticker}) Historical Data"
@@ -434,19 +436,24 @@ def home(request,call=None,name=None,size=None):
     # Initialize the form
     if name==None:
         name="AAPL"
+
     form = StockForm()
-
-    interval = "1m"  # 1-minute interval
-    start_date = "2024-01-24"
-    end_date = "2024-10-25"
-
-    # Fetch stock data using yfinance
-    stock_data = yf.download(
+    if size!=None and size!="MAX" and size<367:
+        start_date = (datetime.today() - timedelta(days=int(size))).strftime('%Y-%m-%d')
+        print("------------------------------",start_date)
+        stock_data = yf.download(
         name,
         start=start_date,
-        end=end_date,
         progress=False
     )
+    
+    else:
+        # Fetch stock data using yfinance
+        stock_data = yf.download(
+            name,
+            progress=False
+        )
+    
     # Reset index and flatten MultiIndex columns
     stock_data.reset_index(inplace=True)
     stock_data.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in stock_data.columns]
@@ -476,6 +483,7 @@ def home(request,call=None,name=None,size=None):
         "1h": 60 * 60 * 1000,   # 1 hour in milliseconds
         "1d": 24 * 60 * 60 * 1000,  # 1 day in milliseconds
     }
+    interval="1m"
     width = interval_mapping.get(interval, 12 * 60 * 60 * 1000)  # Default to 12 hours if interval is unknown
 
     # Create a candlestick chart
@@ -498,7 +506,7 @@ def home(request,call=None,name=None,size=None):
     #p.vbar(x='Date', width=width, top='Open', bottom='Close', fill_color="#D5E1DD", line_color="black", source=source_inc)
 
     # Plot decreasing candles (red)
-    p.segment(x0='Date', y0='Low', x1='Date', y1='High', color="red", line_dash="dashed",source=source_dec)
+    p.segment(x0='Date', y0='Low', x1='Date', y1='High', color="red",source=source_dec)
     #p.vbar(x='Date', width=width, top='Open', bottom='Close', fill_color="#F2583E", line_color="black", source=source_dec)
 
     # Add hover tool for interactivity

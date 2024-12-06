@@ -9,7 +9,116 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
     <!-- Bootstrap CSS CDN -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    
+    <style>
+        .time-frames select {
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #f3f3f3;
+        }
+        .progress {
+            height: 24px;
+            width: 0%;
+            background-color: #4caf50;
+            text-align: center;
+            color: white;
+        }
+        hr {
+            border: none;
+            height: 2px;
+            background-color: black; 
+            width: 100%;
+        }
+        form {
+            padding: 20px;
+            background: #f4f4f4;
+            border-radius: 8px;
+        }
+        label, select, input, button {
+            display: block;
+            width: 80%; 
+            margin-bottom: 10px;
+        }
+        select {
+            width: 50%;
+            max-width: 300px;
+        }
+        button {
+            width: 150px; 
+            height: 40px; 
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 20px; 
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .card {
+            background-color: rgb(95, 167, 209);
+            border-radius: 0.25rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            padding: 1rem;
+            margin-bottom: 3rem;
+        }
+        .card2 {
+            background-color: rgb(95, 167, 209);
+            border-radius: 0.25rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            padding: 0.05rem;
+            margin-bottom: 3rem;
+        }
+        .card3 {
+            background-color: rgb(95, 167, 209);
+            border-radius: 0.25rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            padding: 0.5rem;
+            margin-top: -1cm;
+            margin-bottom: 0.05rem;
+            width: 270%; /* Ensures that the card takes the full width of its container */
+            height: 80%;
+        }
+        .card4 {
+            background-color: rgb(95, 167, 209);
+            border-radius: 0.25rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            padding: 0.05rem;
+            margin-bottom: 3rem;
+        }
+        .card5 {
+            background-color: rgb(95, 167, 209);
+            border-radius: 0.25rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            padding: 0.05rem;
+            margin-bottom: 3rem;
+            width: 180%
+        }
+        .vertical-line {
+            position:absolute;
+            left: 45%;
+            top: 0;
+            bottom: 0;
+            border-left: 2px solid #000;
+            margin-top: -15px;
+            margin-bottom: 15px;
+        }
+        .select-placeholder option:first-child {
+            color: grey; /* Change the color to grey or another light color */
+            display: none; /* Hide from the dropdown */
+        }
+        .bokeh-plot-container {
+            width: 100%; /* This will make the Bokeh plot fill the card3 */
+            height: 400px; /* Adjust this value based on your desired plot height */
+            overflow: hidden;  /* Optional, to handle overflow if the plot is larger than the container */
+            margin-bottom: -200px;
+        }
+    </style>
     <!-- Load BokehJS -->
     <link href="https://cdn.bokeh.org/bokeh/release/bokeh-3.6.1.min.css" rel="stylesheet">
     <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.6.1.min.js"></script>
@@ -34,17 +143,15 @@
                     <div class="card-body">
                             {% csrf_token %}
                             <div class="form-group">
-                                <label for="stocks">Please choose a stock from the list of stocks or enter a ticker symbol for the stock you are looking for searching the ticker symbols in the first list</label>
-                                <label for="company_with_tickers">View stock names and ticker symbols(The list only for looking up ticker symbols and not for choosing a stock):</label>
+                                <label for="stocks">Please select a stock from only one of the lists below.</label>
+                                <label for="company_with_tickers">This list contains all stocks</label>
                                 {{ form.company_with_tickers }}
                             </div>
                             <div class="form-group">
-                                <label for="choices">Select one of the stocks from the list:</label>
+                                <label for="choices">This list contains stocks for which the prediction models have already been trained</label>
                                 {{ form.choices }}
                             </div>
-                            
                             <button type="submit" class="btn btn-primary">Submit</button>
-                        
                     </div>
                 </div>
             </div>
@@ -58,11 +165,11 @@
                 <div class="card2">
                     <div class="card-body">
                         <div class="form-group">
+                            Choose from past Data or Future Trend:
                                 {{ form.choices1 }}  
-                    </div>
+                        </div>
                     </div>
                 </div>
-
                 <!-- Bokeh Plot -->
                 <div class="card3">
                     <h3>{{ plot_title|default:"Sample Stock Graph" }}</h3>
@@ -80,8 +187,8 @@
             <div class="col-md-3 offset-md-1">
                 <div class="card4">
                     <div class="card-body">
+                        Choose timeframe:
                         {{ form.choices2 }}
-                        </select>
                     </div>
                 </div>
             </div>

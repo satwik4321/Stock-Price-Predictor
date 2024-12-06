@@ -21,15 +21,21 @@ def load_ticker_choices():
 
 
 class StockForm(forms.Form):
+
     company_with_tickers = forms.ChoiceField(
         choices=load_ticker_choices(),
         label="View Stocks and their ticker symbols",
         widget=forms.Select(attrs={'id': 'id_company_with_tickers', 'class': 'form-control'}),
         required=False
     )
+
     choices = forms.ChoiceField(
         label='Select one of the stocks from the list:',
+<<<<<<< HEAD
         choices=[('', 'Select the Company Name')] + [('AAPL', 'Apple Inc.'), ('GOOGL', 'Alphabet Inc'), ('NVDA', 'NVIDIA Corporation'), ('TSLA', 'Tesla Inc.'), ('WBD', 'Warner Bros. Discovery Inc. Series A'), ('AMZN', 'Amazon.com Inc.'), ('INTC', 'Intel Corporation'), ('NFLX', 'Netflix Inc.'), ('META', 'Meta Platforms Inc.'), ('F', 'Ford Motor Company')],
+=======
+        choices=[('', 'Select the Company Name'),('AAPL', 'Apple'), ('GOOGL', 'Google'), ('NVDA', 'NVIDIA'), ('TSLA', 'Tesla'), ('WBD', 'Warner Bros Discovery'), ('AMZN', 'Amazon'), ('INTC', 'Intel'), ('NFLX', 'Netflix'), ('META', 'Meta'), ('F', 'Ford Motor')],
+>>>>>>> a19e0e20d1d8de128977ba90b8412b4176c2290f
         required=False,
         widget=forms.Select(attrs={'class': 'form-control'}),
         initial=''
@@ -41,13 +47,15 @@ class StockForm(forms.Form):
         required=True,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+
     choices2 = forms.ChoiceField(
         label='Select future or past data:',
-        choices=[('1D','Daily'),('5D','Weekly'),('1M','Monthly'),('6M','Quarterly'),('YTD','Yearly'),('MAX','Max')],
+        choices=[(2,'Daily'),(8,'Weekly'),(31,'Monthly'),(91,'Quarterly'),(366,'Yearly'),('MAX','Max')],
         required=False,
         widget=forms.Select(attrs={'class': 'form-control'}),
         initial=''
     )
+
 def update_choices():
     file_path = Path(r'C:\Users\sathw\Downloads\SE Project\project\stockproject\models')
     list_stocks = []

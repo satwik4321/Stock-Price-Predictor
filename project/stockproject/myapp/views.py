@@ -391,7 +391,11 @@ def collect_history(request):
             
             
             X,y=create_multi_step_sequences(scaled_data,360,360)
-            X = X.reshape((X.shape[0], X.shape[1], 1))
+            try:
+                X = X.reshape((X.shape[0], X.shape[1], 1))
+            except:
+                plot_title="Insufficient data for this stock"
+                return render(request, 'myapp/home.html', {'form': form, 'plot_title': plot_title, 'data': stock_data.to_dict()})    
             split_ratio = 0.8
             split_index = int(len(X) * split_ratio)
             script, div=train_model(ticker,X,y,input,scaler,timeframe,choice,stock_data['Open'].values.reshape(-1, 1))
